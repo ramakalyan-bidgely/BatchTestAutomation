@@ -2,12 +2,15 @@ package com.batch.creation;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.batch.utils.S3FileTransferHandler;
 import com.batch.utils.sql.batch.BatchDetails;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -124,12 +127,24 @@ public class BatchCountValidator {
         return DataAccumulatedSize;
     }
 
+    public static long SizOfManifestObjects(String s3Bucket, JsonArray batchObjects){
+        long DataAccumulatedSize=0;
+        for (JsonElement arr:batchObjects){
+            long ObjectLength = amazons3Client.getObject(new GetObjectRequest(s3Bucket, arr.getAsString())).getObjectMetadata().getContentLength();
+            DataAccumulatedSize+=ObjectLength;
+        }
+
+        return DataAccumulatedSize;
+
+    }
+
     public static long UploadAndAccumulate(String SRC, String DEST) {
 
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, SRC);
         return DataAccumulatedSize;
     }
+
 
     //get Object list from batchManifestFile  and calculate size of those files
 /*
