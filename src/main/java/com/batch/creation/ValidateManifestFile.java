@@ -1,5 +1,6 @@
 package com.batch.creation;
 
+import com.batch.utils.InputConfig;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.ManifestResponse;
 import com.google.gson.JsonObject;
@@ -16,7 +17,8 @@ public class ValidateManifestFile {
     UUID batchId = null;
 
 
-    public void ManifestFileValidation(String manifestObject) {
+    public void ManifestFileValidation(String manifestObject, InputConfig InputConfigFile) {
+        int issueCount=0;
 
         JsonObject mObj = ManifestFileParser.getManifestFile(manifestObject);
         ManifestResponse mfResponse = ManifestFileParser.getManifestResponse(mObj);
@@ -57,15 +59,28 @@ public class ValidateManifestFile {
         }  if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file " + manifestObject, true);
         }
-
-
-
-        //extract below
         if (is_Batch_Id_Available) {
-            batchId = UUID.fromString(mObj.get("batchId").getAsString());
-            Boolean DBEntryAvailability = DBEntryVerification.validate(batchId);
-            Assert.assertEquals(DBEntryAvailability, true);
+            if(!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()))) issueCount++;
         }
+        if(!(mfResponse.getPilotId()==InputConfigFile.getPilotId())){
+            issueCount++;
+        }
+        if(!(mfResponse.getComponent()==InputConfigFile.getComponent())){
+            issueCount++;
+        }
+        if(!(mfResponse.getComponent()==InputConfigFile.getComponent())){
+            issueCount++;
+        }
+        if(mfResponse.getDataSizeInBytes()>= InputConfigFile.getDataSizeInBytes()){
+            if(mfResponse.getbatchCreationType().equals("SIZE_BASED"))
+            issueCount++;
+        }
+
+        String value ="" ;
+                //jsonObject.get("pilotId").getAsString()+"-"+jsonObject.get("component").getAsString()+"-"+jsonObject.get("batchId").getAsString()
+
+
+
 
 
         // Compare common kys between config and manifest file

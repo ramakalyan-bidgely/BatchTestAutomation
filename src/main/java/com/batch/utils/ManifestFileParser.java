@@ -87,9 +87,15 @@ public class ManifestFileParser {
         config.setbatchCreationTime(jsonObject.get("batchCreationTime").getAsString());
         config.setlatestObjectKey(jsonObject.get("latestObjectKey").getAsString());
         config.setBatchObjects((jsonObject.get("batchObjects").getAsJsonArray()));
+        config.setClusterName(jsonObject.getAsJsonObject("emrParameters").get("clusterName").getAsString());
         return config;
     }
 }
+
+
+
+
+
 
 /*
 for converting json response to jsonarray

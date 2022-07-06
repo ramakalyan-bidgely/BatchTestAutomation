@@ -30,6 +30,7 @@ public class ManifestResponse {
     private int parallelBatchesIfIndependent;
     private int maxTries;
     private String dagId;
+    private String clusterName;
 
     private String batchId;
     private static JsonArray batchObjects;
@@ -107,6 +108,8 @@ public class ManifestResponse {
     public String getPrefix() {
         return prefix;
     }
+    public String getClusterName(){return clusterName;}
+    public void  setClusterName(String clusterName){this.clusterName=clusterName;};
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
