@@ -30,7 +30,7 @@ public class TC_BC_02 {
     @Test()
     public void validate() throws IOException {
 
-        String jsonFilePath = "s3://bidgely-adhoc-batch-qa/TestAutomation/batchConfig.json";
+        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/useringestion/user_batch_config.json";
 
         AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/TestAutomation/10061/" + dt + "/" + getClass().getSimpleName() + "/");
         String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";

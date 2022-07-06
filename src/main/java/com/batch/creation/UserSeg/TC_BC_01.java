@@ -29,7 +29,7 @@ public class TC_BC_01 {
     public void validate() {
         InputConfigParser ConfigParser = new InputConfigParser();
 
-        String jsonFilePath = "s3://bidgely-adhoc-batch-qa/TestAutomation/batchConfig.json";
+        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/useringestion/user_batch_config.json";
         JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
 
         JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();

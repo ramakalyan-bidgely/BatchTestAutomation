@@ -35,7 +35,7 @@ public class TC_BC_04 {
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, Dir);
         int issueCount = 0;
         InputConfigParser ConfigParser = new InputConfigParser();
-        String jsonFilePath = "D:\\TEST DATA\\TC_BC_02\\input_config.json";
+        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/useringestion/user_batch_config.json";
         JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
         JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
 
