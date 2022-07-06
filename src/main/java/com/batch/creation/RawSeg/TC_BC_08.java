@@ -28,7 +28,7 @@ public class TC_BC_08 {
         // a file with proper naming convention is given to transfer files
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI,Dir);
         InputConfigParser ConfigParser = new InputConfigParser();
-        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/ raw_batch_config.json";
+        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
         JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
         JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
         // JsonObject value =InputConfigParser.getBatchInputs(batchConfig.get("batchConfigs").getAsString());

@@ -25,7 +25,7 @@ public class TC_BC_14 {
         //we need to go through all the generated manifest files and check whether any object is repeating or not
 
         InputConfigParser ConfigParser = new InputConfigParser();
-        String jsonFilePath = "D:\\TEST DATA\\TC_BC_14\\input_config.json";
+        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
         JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
         JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
         List<String> list = new ArrayList<String>();

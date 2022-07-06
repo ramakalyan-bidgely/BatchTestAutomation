@@ -24,7 +24,7 @@ public class TC_BC_03 {
     public void validate() throws IOException {
         int issueCount = 0;
         InputConfigParser ConfigParser = new InputConfigParser();
-        String jsonFilePath = "D:\\TEST DATA\\TC_BC_03\\input_config.json";
+        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
         JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
         JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
 
