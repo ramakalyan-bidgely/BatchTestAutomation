@@ -8,6 +8,7 @@ import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
 import com.google.gson.JsonObject;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 
@@ -34,26 +36,24 @@ public class TC_BC_02 {
     public void validate() throws IOException {
 
         String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
-
-        AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/TestAutomation/10061/" + dt + "/" + getClass().getSimpleName() + "/");
         String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-        long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, Dir);
+        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/10061/" + dt + "/" + getClass().getSimpleName() + "/";
+
+        long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+
         InputConfigParser ConfigParser = new InputConfigParser();
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
         JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
 
-
         InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);
         int pilotId = bc.getPilotId();
 
-        //new push
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String manifest_prefix = bc.getPrefix();
         Long dataSizeInbytes = bc.getDataSizeInBytes();
 
-        Long ExpectedNumberOfBatches = DataAccumulatedSize / dataSizeInbytes;
 
         int SIZE_BASED_CNT = 0;
 
@@ -67,9 +67,7 @@ public class TC_BC_02 {
         }
 
 
-        // Assert.assertEquals(Optional.ofNullable(issueCount), 1);
-
-
+         Assert.assertEquals(Optional.ofNullable(issueCount), 0);
     }
 
 }
