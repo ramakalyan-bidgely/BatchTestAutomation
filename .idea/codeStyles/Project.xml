@@ -1,0 +1,16 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <option name="ENABLE_SECOND_REFORMAT" value="true" />
+    <ScalaCodeStyleSettings>
+      <option name="alwaysUsedImports">
+        <array>
+          <option value="scala.collection.convert.ImplicitConversions.`iterable AsScalaIterable`" />
+          <option value="scala.collection.mutable" />
+          <option value="scala.math.Ordered.orderingToOrdered" />
+          <option value="scala.math.Ordering.Implicits.infixOrderingOps" />
+          <option value="sqlContext.implicits._" />
+        </array>
+      </option>
+    </ScalaCodeStyleSettings>
+  </code_scheme>
+</component>

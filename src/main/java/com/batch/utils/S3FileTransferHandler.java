@@ -1,0 +1,127 @@
+package com.batch.utils;
+
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.transfer.Transfer;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.TransferProgress;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * @author Rama Kalyan
+ */
+
+
+public class S3FileTransferHandler<Stringt> {
+
+    static AmazonS3Client amazonS3Client = new AmazonS3Client();
+    List<String> ListOfEntities = Arrays.asList("ListOfEnrollmentFiles", "ListOfMeterFiles", "ListOfRAWDataFiles", "ListOfInvoiceFiles");
+
+    public static long TransProgress(Transfer trans) {
+        System.out.println(trans.getDescription());
+        TransferProgress progress = trans.getProgress();
+        long totalBytes = progress.getTotalBytesToTransfer();
+        System.out.println("Total Bytes to be transferred: " + totalBytes);
+
+        printProgressBar(0.0);
+        do {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                return 0;
+            }
+            long BytesTransferred = progress.getBytesTransferred();
+            double pct = progress.getPercentTransferred();
+            eraseProgressBar();
+            printProgressBar(pct);
+        } while (trans.isDone() == false);
+        Transfer.TransferState transSt = trans.getState();
+        System.out.println("Transfer State : " + transSt);
+        return totalBytes;
+    }
+
+    public static void printProgressBar(double pct) {
+        // if bar_size changes, then change erase_bar (in eraseProgressBar) to
+        // match.
+        final int bar_size = 40;
+        final String empty_bar = "                                        ";
+        final String filled_bar = "########################################";
+        int amt_full = (int) (bar_size * (pct / 100.0));
+        System.out.format("  [%s%s] %.2f ", filled_bar.substring(0, amt_full), empty_bar.substring(0, bar_size - amt_full), pct);
+    }
+
+    // erases the progress bar.
+    public static void eraseProgressBar() {
+        // erase_bar is bar_size (from printProgressBar) + 4 chars. + added Percentage also
+        final String erase_bar = "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b";
+        System.out.format(erase_bar);
+    }
+
+    public static List<File> ListofFiles(String dir) {
+        File dr = new File(dir);
+        List<File> paths = null;
+        if (dr.exists() && dr.isDirectory()) {
+            paths = Arrays.asList(dr.listFiles());
+        } else {
+            System.out.println("Directory not found");
+        }
+        return paths;
+    }
+    public static String[] listFiles(String path){
+        //create a string[] pathnames call the function and store it in pathnames loop through it
+        String[] pathnames;
+        File f = new File(path);
+        pathnames= f.list();
+        return pathnames;
+    }
+
+    public static long TransferFiles(AmazonS3URI DEST_URI, String Dir) {
+
+        long DataAccumulatedSize = 0;
+        TransferManager tmClient = TransferManagerBuilder.standard().withS3Client(amazonS3Client).build();
+        Transfer myUpload = tmClient.uploadFileList(DEST_URI.getBucket(), DEST_URI.getKey(), new File(Dir), ListofFiles(Dir));
+        if (myUpload.isDone() == false) {
+            System.out.println("Transfer: " + myUpload.getDescription());
+            System.out.println("  - State: " + myUpload.getState());
+            //System.out.println("  - Progress: " + myUpload.getProgress().getBytesTransferred());
+        }
+
+        // Transfers also allow you to set a <code>ProgressListener</code> to receive
+        // asynchronous notifications about your transfer's progress.
+      /*  myUpload.addProgressListener((ProgressListener) event -> {
+            System.out.println("Progress In Bytes : ->" + event.getBytesTransferred());
+        });*/
+
+        // Or you can block the current thread and wait for your transfer to
+        // to complete. If the transfer fails, this method will throw an
+        // AmazonClientException or AmazonServiceException detailing the reason.
+
+        try {
+            DataAccumulatedSize = TransProgress(myUpload);
+            myUpload.waitForCompletion();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        // After the upload is complete, call shutdownNow to release the resources.
+        tmClient.shutdownNow();
+
+
+      /*  AmazonS3Client amazonS3Client = new AmazonS3Client();
+
+        String Targetkey = DEST_URI.getKey().replace("s3://", "").replace(DEST_URI.getBucket(), "");
+        for (File fl : ListofFiles(Dir)) {
+            System.out.println("File Transferring : " + fl.getName());
+            amazonS3Client.putObject(DEST_URI.getBucket(), Targetkey + "/" + fl.getName(), fl);
+        }
+        System.out.println("Files have been uploaded successfully");*/
+        return DataAccumulatedSize;
+
+    }
+
+
+}
+

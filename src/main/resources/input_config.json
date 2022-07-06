@@ -1,0 +1,65 @@
+{
+  "batchConfigs": [
+    {
+      "component": "ingestion",
+      "pilotId": 10061,
+      "emrParams": {
+        "workerInstanceCount": 2,
+        "diskSizeInGb": 1024,
+        "volumePerInstance": 1,
+        "fleetType": [
+          "r4.4xlarge",
+          "r3.4xlarge",
+          "r5.4xlarge",
+          "r5d.xlarge",
+          "r5a.4xlarge"
+        ]
+      },
+      "steps": [
+        {
+          "stepName": "ingestion-step1",
+          "stepSensorName": "step_sensor",
+          "arguments": [
+            "s3://bidgely-adhoc-batch-qa/kalyan/E2E_RAW/raw_manifests/raw_manifest_10061__RAW_D_86400_S_20220623_007.json",
+            "s3://bidgely-adhoc-batch-qa/kalyan/batch-pipeline/batch_ingestion_service_configs.json"
+          ],
+          "stepParams": {
+            "className": "com.bidgely.cloud.datalake.data.ingestion.ingester.DataIngester",
+            "sparkConfigs": [
+              "--executor-memory",
+              "20g",
+              "--executor-cores",
+              "1",
+              "--driver-memory",
+              "20g"
+            ]
+          }
+        }
+      ],
+      "batchCreationConfig": {
+        "bucket": "bidgely-adhoc-batch-qa",
+        "prefix": "TestAutomation/10061",
+        "directoryStructure": "Firehose",
+        "datasetType": "RAW",
+        "dataFormat": "parquet",
+        "dataFormatOptions": {
+          "a": "b"
+        },
+        "compressionFormat": "snappy",
+        "operations": [
+          ""
+        ],
+        "maxLookUpDays": 2,
+        "dataSizeInBytes": 134217728,
+        "intervalInSec": 86400
+      },
+      "batchSchedulingConfig": {
+        "skipSucceededTasksOnRetry": true,
+        "isNextBatchDependentOnPrev": true,
+        "parallelBatchesIfIndependent": 2,
+        "maxTries": 2,
+        "dagId": "batch_invoice_ingestion"
+      }
+    }
+  ]
+}
