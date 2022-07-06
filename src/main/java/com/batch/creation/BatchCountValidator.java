@@ -88,7 +88,7 @@ public class BatchCountValidator {
         ListObjectsV2Result fileObjs = amazons3Client.listObjectsV2(req);
         List<S3ObjectSummary> summaries = fileObjs.getObjectSummaries();
         List<String> manifestObjs = new ArrayList<String>();
-        System.out.println("In gettingManifestFiles");
+
     }
 
     public static Long getAccumulatedSize(Integer pilotId, String s3Bucket, String prefix) {

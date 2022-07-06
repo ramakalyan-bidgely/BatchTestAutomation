@@ -1,34 +1,49 @@
 package com.batch;
 
-import com.batch.utils.sql.batch.BatchJDBCTemplate;
-
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Component;
 import org.testng.TestListenerAdapter;
 import org.testng.TestNG;
 import org.testng.collections.Lists;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+
+
 
 import java.io.*;
-import java.net.URL;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
+
 
 /**
  * @author Rama Kalyan
  */
-
+/*@Component
+@PropertySource(value = "classpath:Batch.properties")*/
 public class BatchFrameworkTestAutomation {
 
     static ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath*:batch-dao.xml");
-    public static void main(String[] args) throws IOException, ParseException {
+
 
 /*
-        Properties props = new Properties();
+
+    @Value("${SuitePath}")
+    private static String SuitePath;
+    @Autowired
+    private static Environment env;
+*/
+
+
+    public static void main(String[] args) throws IOException, ParseException {
+
+
+    /*    Properties props = new Properties();
         try {
             props.load(BatchFrameworkTestAutomation.class.getResourceAsStream("Batch.properties"));
          }
@@ -36,30 +51,24 @@ public class BatchFrameworkTestAutomation {
             e.printStackTrace();
         }
    */
-        URL root = BatchFrameworkTestAutomation.class.getProtectionDomain().getCodeSource().getLocation();
+       /* URL root = BatchFrameworkTestAutomation.class.getProtectionDomain().getCodeSource().getLocation();
         URL propertiesFile = new URL(root, "Batch.properties");
         Properties properties = new Properties();
         properties.load(propertiesFile.openStream());
+*/
 
 
 
 
-
-     /* //Reading Properties file
-       FileReader PropReader = new FileReader("Batch.properties");
+      //Reading Properties file
+       FileReader PropReader = new FileReader(args[0]);
 
         Properties props = new Properties();
         try {
             props.load(PropReader);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }*/
-
-    /*  String batchInputConfig = props.getProperty("batchInputConfig");
-        JSONParser jsonParser = new JSONParser();
-        FileReader jsonreader = new FileReader(batchInputConfig);
-        Object obj = jsonParser.parse(jsonreader);
-        JSONObject jobj = (JSONObject) obj;*/
+        }
 
 
 
@@ -67,18 +76,23 @@ public class BatchFrameworkTestAutomation {
         TestNG testng = new TestNG();
         List<String> suites = Lists.newArrayList();
 
-/*
-        try (InputStream inputStream = BatchFrameworkTestAutomation.class.getResourceAsStream("/testng.xml"); BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            String contents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-        }*/
-        String SuitePath = properties.getProperty("SuitePath");
+
+
+
+
+
+        String SuitePath = props.getProperty("SuitePath");
+
         System.out.println(SuitePath);
+
         suites.add(SuitePath);
         testng.setTestSuites(suites);
         testng.run();
 
 
     }
+
+
     // public static BatchJDBCTemplate batchJDBCTemplate = (BatchJDBCTemplate) context.getBean("BatchJDBCTemplate");
 
 
