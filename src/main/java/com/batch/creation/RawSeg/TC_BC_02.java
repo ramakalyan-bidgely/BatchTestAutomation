@@ -46,6 +46,8 @@ public class TC_BC_02 {
 
         InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);
         int pilotId = bc.getPilotId();
+
+        //new push
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String manifest_prefix = bc.getPrefix();
