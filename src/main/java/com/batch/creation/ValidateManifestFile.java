@@ -34,27 +34,27 @@ public class ValidateManifestFile {
 
         if (is_BatchObjects_Available && is_BatchSizeInMb_Available && is_Batch_Id_Available && is_Batch_Id_Available && is_BatchCreationTime_Available && is_BatchCreationType_Available && is_latestObjectModifiedTime_Available && is_latestObjectKey_Available && is_emr_params_Available && is_stepConfigs_Available && is_scheduling_Available) {
             Reporter.log("All keys are available in the Manifest file " + manifestObject, true);
-        } else if (!is_BatchObjects_Available) {
+        }  if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file" + manifestObject, true);
-        } else if (!is_BatchSizeInMb_Available) {
+        }  if (!is_BatchSizeInMb_Available) {
             Reporter.log("Batch Size is missing in he file " + manifestObject, true);
-        } else if (!is_Batch_Id_Available) {
+        }  if (!is_Batch_Id_Available) {
             Reporter.log("Batch Id is missing in the file " + manifestObject, true);
-        } else if (!is_BatchCreationTime_Available) {
+        }  if (!is_BatchCreationTime_Available) {
             Reporter.log("Batch Creation time is invalid or missing in the file " + manifestObject, true);
-        } else if (!is_BatchCreationType_Available) {
+        }  if (!is_BatchCreationType_Available) {
             Reporter.log("Batch Creation Type is invalid or missing in the file " + manifestObject, true);
-        } else if (!is_latestObjectModifiedTime_Available) {
+        }  if (!is_latestObjectModifiedTime_Available) {
             Reporter.log("latest object modified time is invalid or missing in the file " + manifestObject, true);
-        } else if (!is_latestObjectKey_Available) {
+        }  if (!is_latestObjectKey_Available) {
             Reporter.log("latest object key is invalid or missing in the file " + manifestObject, true);
-        } else if (!is_emr_params_Available) {
+        }  if (!is_emr_params_Available) {
             Reporter.log("Batch EMR params are invalid or missing in the file " + manifestObject, true);
-        } else if (!is_stepConfigs_Available) {
+        }  if (!is_stepConfigs_Available) {
             Reporter.log("Batch Steps are invalid or missing in the file " + manifestObject, true);
-        } else if (!is_scheduling_Available) {
+        }  if (!is_scheduling_Available) {
             Reporter.log("Batch com.batch.scheduling is invalid or missing in the file " + manifestObject, true);
-        } else if (!is_BatchObjects_Available) {
+        }  if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file " + manifestObject, true);
         }
 

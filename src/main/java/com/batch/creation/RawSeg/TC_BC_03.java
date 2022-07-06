@@ -45,6 +45,6 @@ public class TC_BC_03 {
             JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
             if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()))) issueCount++;
         }
-        Assert.assertEquals(issueCount, 1);
+        Assert.assertEquals(issueCount, 0);
     }
 }

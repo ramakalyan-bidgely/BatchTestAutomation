@@ -28,7 +28,7 @@ public class TC_BC_02 {
     //have to prepare data size of 300mb
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
-    private final Integer issueCount = 0;
+    private Integer issueCount = 0;
 
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
@@ -64,6 +64,7 @@ public class TC_BC_02 {
         for (String str : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
             if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) SIZE_BASED_CNT++;
+            else if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED"))  issueCount++;
         }
 
 
