@@ -36,9 +36,7 @@ public class TC_BC_02 {
     public void validate() throws IOException {
 
         String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
-
         String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-
         String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/10061/" + dt + "/" + getClass().getSimpleName() + "/";
 
         long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
@@ -70,8 +68,6 @@ public class TC_BC_02 {
 
 
          Assert.assertEquals(Optional.ofNullable(issueCount), 0);
-
-
     }
 
 }
