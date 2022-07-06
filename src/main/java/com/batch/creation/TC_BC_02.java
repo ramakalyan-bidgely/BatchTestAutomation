@@ -80,7 +80,6 @@ public class TC_BC_02 {
         String Dir = "D:\\ProS\\Bidgely\\DataIngestion\\TestCasesforBatch\\Scenario1";
 
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, Dir); //Transfer files functionality itself providing accumulated data size
-
         System.out.println("Data Accumulated Size : " + DataAccumulatedSize);
 
 
