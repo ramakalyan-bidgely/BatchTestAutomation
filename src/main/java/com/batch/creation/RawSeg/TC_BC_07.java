@@ -11,6 +11,8 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -19,6 +21,7 @@ import java.util.logging.Logger;
 public class TC_BC_07 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private final Integer issueCount = 0;
+    String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
     @Test()
     public void validate() throws IOException {
@@ -35,8 +38,11 @@ public class TC_BC_07 {
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String manifest_prefix = bc.getPrefix();
-        //String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+        String bucket_prefix = bc.getPrefix();
+        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+
+
+
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
 
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);

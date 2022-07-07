@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.TransferProgress;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -126,6 +127,30 @@ public class S3FileTransferHandler<Stringt> {
         }
         System.out.println("Files have been uploaded successfully");*/
         return DataAccumulatedSize;
+
+    }
+    public static ArrayList<String> GettingObjectsNames(AmazonS3URI SRC_URI){
+        com.amazonaws.services.s3.model.ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket()).withPrefix(SRC_URI.getKey());
+        ArrayList<S3ObjectSummary> summ = new ArrayList<>();
+        ArrayList<String> keys = new ArrayList<>();
+        ListObjectsV2Result objs = null;
+        do {
+            objs = amazonS3Client.listObjectsV2(ListObjreq);
+            System.out.println(objs.getObjectSummaries() + "\n");
+            summ.addAll(objs.getObjectSummaries());
+            ListObjreq.setContinuationToken(objs.getNextContinuationToken());
+        } while (objs.isTruncated());
+
+
+        for (S3ObjectSummary summary : summ) {
+            keys.add(summary.getKey().toString());
+        }
+        ArrayList<String> objects =new ArrayList<>();
+        for(int i=1;i<keys.size();i++){
+            String[] values = keys.get(i).split("/");
+            objects.add(values[values.length-1]);
+        }
+        return objects;
 
     }
 

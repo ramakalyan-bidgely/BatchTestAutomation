@@ -28,14 +28,14 @@ public class TC_BC_04 {
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     @Test()
     void validate() throws IOException {
-        AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/kalyan/ETE_RAW/10061/2022/06/");
+        //AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/kalyan/ETE_RAW/10061/2022/06/");
         String Dir = "D:\\TEST DATA\\TC_BC_04\\DATA_FILES";
         String[] data = Dir.split("\\\\");
         String fileName = data[data.length - 1];
 
 
         // a file with proper naming convention is given to transfer files
-        long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, Dir);
+        //long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, Dir);
         int issueCount = 0;
         InputConfigParser ConfigParser = new InputConfigParser();
         String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
@@ -48,6 +48,16 @@ public class TC_BC_04 {
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
         String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+
+        //Local to S3
+        //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
+        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
+        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
+
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
