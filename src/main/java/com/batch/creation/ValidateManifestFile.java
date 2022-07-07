@@ -68,27 +68,40 @@ public class ValidateManifestFile {
         if(!(mfResponse.getComponent()==InputConfigFile.getComponent())){
             issueCount++;
         }
-        if(!(mfResponse.getComponent()==InputConfigFile.getComponent())){
-            issueCount++;
-        }
         if(mfResponse.getDataSizeInBytes()>= InputConfigFile.getDataSizeInBytes()){
-            if(mfResponse.getbatchCreationType().equals("SIZE_BASED"))
+            if(!mfResponse.getbatchCreationType().equals("SIZE_BASED"))
             issueCount++;
         }
 
-        String value ="" ;
-                //jsonObject.get("pilotId").getAsString()+"-"+jsonObject.get("component").getAsString()+"-"+jsonObject.get("batchId").getAsString()
+        String value =mfResponse.getPilotId()+"-"+mfResponse.getComponent()+"-"+mfResponse.getbatchId();
+        if(value.equals(mfResponse.getClusterName())){
+            issueCount++;
+        }
+
+        if((mfResponse.getDataSizeInBytes()).equals(BatchCountValidator.SizOfManifestObjects(mfResponse.getBucket(),mfResponse.getBatchObjects()))){
+            issueCount++;
+        }
+        if(mfResponse.getDatasetType().equals(InputConfigFile.getDatasetType())){
+            issueCount++;
+        }
+        if(!mfResponse.isSkipSucceededTasksOnRetry()== InputConfigFile.isSkipSucceededTasksOnRetry()){
+            issueCount++;
+        }
+        if(!mfResponse.isNextBatchDependentOnPrev()==InputConfigFile.isNextBatchDependentOnPrev()){
+            issueCount++;
+        }
+        if(!(mfResponse.getParallelBatchesIfIndependent()==InputConfigFile.getParallelBatchesIfIndependent())){
+            issueCount++;
+        }
+        if(!(mfResponse.getMaxTries()==InputConfigFile.getMaxTries())){
+            issueCount++;
+        }
 
 
 
-
-
+        Assert.assertEquals(issueCount,0);
         // Compare common kys between config and manifest file
         //extract batchId from manifestkey path - > compare with batchId value
-
         // validate scheduling config and all components
-
-
-
     }
 }
