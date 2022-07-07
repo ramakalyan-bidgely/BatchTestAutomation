@@ -18,7 +18,7 @@ public class ValidateManifestFile {
 
 
     public void ManifestFileValidation(String manifestObject, InputConfig InputConfigFile) {
-        int issueCount=0;
+        int issueCount = 0;
 
         JsonObject mObj = ManifestFileParser.getManifestFile(manifestObject);
         ManifestResponse mfResponse = ManifestFileParser.getManifestResponse(mObj);
@@ -36,70 +36,79 @@ public class ValidateManifestFile {
 
         if (is_BatchObjects_Available && is_BatchSizeInMb_Available && is_Batch_Id_Available && is_Batch_Id_Available && is_BatchCreationTime_Available && is_BatchCreationType_Available && is_latestObjectModifiedTime_Available && is_latestObjectKey_Available && is_emr_params_Available && is_stepConfigs_Available && is_scheduling_Available) {
             Reporter.log("All keys are available in the Manifest file " + manifestObject, true);
-        }  if (!is_BatchObjects_Available) {
+        }
+        if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file" + manifestObject, true);
-        }  if (!is_BatchSizeInMb_Available) {
+        }
+        if (!is_BatchSizeInMb_Available) {
             Reporter.log("Batch Size is missing in he file " + manifestObject, true);
-        }  if (!is_Batch_Id_Available) {
+        }
+        if (!is_Batch_Id_Available) {
             Reporter.log("Batch Id is missing in the file " + manifestObject, true);
-        }  if (!is_BatchCreationTime_Available) {
+        }
+        if (!is_BatchCreationTime_Available) {
             Reporter.log("Batch Creation time is invalid or missing in the file " + manifestObject, true);
-        }  if (!is_BatchCreationType_Available) {
+        }
+        if (!is_BatchCreationType_Available) {
             Reporter.log("Batch Creation Type is invalid or missing in the file " + manifestObject, true);
-        }  if (!is_latestObjectModifiedTime_Available) {
+        }
+        if (!is_latestObjectModifiedTime_Available) {
             Reporter.log("latest object modified time is invalid or missing in the file " + manifestObject, true);
-        }  if (!is_latestObjectKey_Available) {
+        }
+        if (!is_latestObjectKey_Available) {
             Reporter.log("latest object key is invalid or missing in the file " + manifestObject, true);
-        }  if (!is_emr_params_Available) {
+        }
+        if (!is_emr_params_Available) {
             Reporter.log("Batch EMR params are invalid or missing in the file " + manifestObject, true);
-        }  if (!is_stepConfigs_Available) {
+        }
+        if (!is_stepConfigs_Available) {
             Reporter.log("Batch Steps are invalid or missing in the file " + manifestObject, true);
-        }  if (!is_scheduling_Available) {
+        }
+        if (!is_scheduling_Available) {
             Reporter.log("Batch com.batch.scheduling is invalid or missing in the file " + manifestObject, true);
-        }  if (!is_BatchObjects_Available) {
+        }
+        if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file " + manifestObject, true);
         }
         if (is_Batch_Id_Available) {
-            if(!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()))) issueCount++;
+            if (!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()))) issueCount++;
         }
-        if(!(mfResponse.getPilotId()==InputConfigFile.getPilotId())){
+        if (!(mfResponse.getPilotId() == InputConfigFile.getPilotId())) {
             issueCount++;
         }
-        if(!(mfResponse.getComponent()==InputConfigFile.getComponent())){
+        if (!(mfResponse.getComponent() == InputConfigFile.getComponent())) {
             issueCount++;
         }
-        if(mfResponse.getDataSizeInBytes()>= InputConfigFile.getDataSizeInBytes()){
-            if(!mfResponse.getbatchCreationType().equals("SIZE_BASED"))
+        if (mfResponse.getDataSizeInBytes() >= InputConfigFile.getDataSizeInBytes()) {
+            if (!ManifestResponse.getbatchCreationType().equals("SIZE_BASED")) issueCount++;
+        }
+
+        String value = mfResponse.getPilotId() + "-" + mfResponse.getComponent() + "-" + mfResponse.getbatchId();
+        if (value.equals(mfResponse.getClusterName())) {
             issueCount++;
         }
 
-        String value =mfResponse.getPilotId()+"-"+mfResponse.getComponent()+"-"+mfResponse.getbatchId();
-        if(value.equals(mfResponse.getClusterName())){
+        if ((mfResponse.getDataSizeInBytes()).equals(BatchCountValidator.SizeOfObjects(mfResponse.getBucket(), ManifestResponse.getBatchObjects()))) {
             issueCount++;
         }
-
-        if((mfResponse.getDataSizeInBytes()).equals(BatchCountValidator.SizOfManifestObjects(mfResponse.getBucket(),mfResponse.getBatchObjects()))){
+        if (mfResponse.getDatasetType().equals(InputConfigFile.getDatasetType())) {
             issueCount++;
         }
-        if(mfResponse.getDatasetType().equals(InputConfigFile.getDatasetType())){
+        if (!mfResponse.isSkipSucceededTasksOnRetry() == InputConfigFile.isSkipSucceededTasksOnRetry()) {
             issueCount++;
         }
-        if(!mfResponse.isSkipSucceededTasksOnRetry()== InputConfigFile.isSkipSucceededTasksOnRetry()){
+        if (!mfResponse.isNextBatchDependentOnPrev() == InputConfigFile.isNextBatchDependentOnPrev()) {
             issueCount++;
         }
-        if(!mfResponse.isNextBatchDependentOnPrev()==InputConfigFile.isNextBatchDependentOnPrev()){
+        if (!(mfResponse.getParallelBatchesIfIndependent() == InputConfigFile.getParallelBatchesIfIndependent())) {
             issueCount++;
         }
-        if(!(mfResponse.getParallelBatchesIfIndependent()==InputConfigFile.getParallelBatchesIfIndependent())){
-            issueCount++;
-        }
-        if(!(mfResponse.getMaxTries()==InputConfigFile.getMaxTries())){
+        if (!(mfResponse.getMaxTries() == InputConfigFile.getMaxTries())) {
             issueCount++;
         }
 
 
-
-        Assert.assertEquals(issueCount,0);
+        Assert.assertEquals(issueCount, 0);
         // Compare common kys between config and manifest file
         //extract batchId from manifestkey path - > compare with batchId value
         // validate scheduling config and all components

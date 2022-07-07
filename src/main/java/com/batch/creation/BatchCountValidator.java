@@ -104,7 +104,7 @@ public class BatchCountValidator {
             System.out.println(str.getLatest_modified_key());
         }
 
-        ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket).withStartAfter(prefix);
+        ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket);
 
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
 
@@ -127,7 +127,7 @@ public class BatchCountValidator {
         return DataAccumulatedSize;
     }
 
-    public static long SizOfManifestObjects(String s3Bucket, JsonArray batchObjects) {
+    public static long SizeOfObjects(String s3Bucket, JsonArray batchObjects) {
         long DataAccumulatedSize = 0;
         for (JsonElement arr : batchObjects) {
             long ObjectLength = amazons3Client.getObject(new GetObjectRequest(s3Bucket, arr.getAsString())).getObjectMetadata().getContentLength();
@@ -138,7 +138,6 @@ public class BatchCountValidator {
 
 
     public static long UploadAndAccumulate(String SRC, String DEST) {
-
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, SRC);
         return DataAccumulatedSize;

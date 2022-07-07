@@ -63,7 +63,7 @@ public class TC_BC_04 {
         }
 
 
-        Assert.assertEquals(issueCount, 1);
+        Assert.assertEquals(issueCount, 0);
 
     }
 

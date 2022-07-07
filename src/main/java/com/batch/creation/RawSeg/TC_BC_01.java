@@ -8,6 +8,7 @@ package com.batch.creation.RawSeg;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
 import com.batch.utils.InputConfig;
@@ -50,7 +51,7 @@ public class TC_BC_01 {
         int pilotId = bc.getPilotId();
         String s3bucket = bc.getBucket();
         String component = bc.getComponent();
-        String prefix = bc.getPrefix();
+        String DataPathPrefix = bc.getPrefix();
         String directoryStructure = bc.getDirectoryStructure();
         String datasetType = bc.getDatasetType();
         String dataFormat = bc.getDataFormat();
@@ -60,14 +61,14 @@ public class TC_BC_01 {
         int parallelBatchesIfIndependent = bc.getParallelBatchesIfIndependent();
         int maxTries = bc.getMaxTries();
         String dagId = bc.getDagId();
-        System.out.println(pilotId);
 
 
         Reporter.log("Validating Batch Creation components for pilot : {}", pilotId);
 
         AmazonS3Client amazons3Client = new AmazonS3Client();
-        Boolean isBucketAvailable = amazons3Client.doesBucketExistV2(s3bucket);
+        boolean isBucketAvailable = amazons3Client.doesBucketExistV2(s3bucket);
 
+        boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix);
 
         Long dataSizeInBytes = bc.getDataSizeInBytes();
         boolean isDataSizeConfigured = dataSizeInBytes > 0;
@@ -80,6 +81,7 @@ public class TC_BC_01 {
 
         //Validating maxLookupDays
         int maxLookupDays = bc.getMaxLookUpDays();
+
         boolean isMaxLookupDaysConfigured = maxLookupDays > 0;
 
 
@@ -88,28 +90,28 @@ public class TC_BC_01 {
         }
         if (!isBucketAvailable) {
             issueCount++;
-            System.out.println("here 12");
-            System.out.println(issueCount);
+            Reporter.log("Bucket is not available, Verify the Input Configuration file : " + s3bucket);
+        }
+        if (!isPrefixAvailable) {
+            issueCount++;
+            Reporter.log("Prefix is not available, Verify the Input Configuration file : " + DataPathPrefix);
         }
         if (!isDataSizeConfigured) {
             issueCount++;
-            System.out.println("here 11");
-            System.out.println(issueCount);
+            Reporter.log("Issue in Configured Threshold of DataSizeConfigured : " + dataSizeInBytes);
         }
         if (!isIntervalInSecConfigured) {
             issueCount++;
-            System.out.println("here 10");
-            System.out.println(issueCount);
+            Reporter.log("Issue in Configured Threshold of IntervalInSec : " + intervalInSec);
         }
         if (!isMaxLookupDaysConfigured) {
             issueCount++;
-            System.out.println("here 9");
-            System.out.println(issueCount);
+            Reporter.log("Invalid number of Max Lookup Days : " + maxLookupDays);
         }
+
         if (!directoryStructure.equals("Firehose")) {
             issueCount++;
-            System.out.println("here 8");
-            System.out.println(issueCount);
+            Reporter.log("Issue in directory Structure : " + directoryStructure);
 
         }
         /*if (!skipSucceededTasksOnRetry) {
@@ -136,24 +138,19 @@ public class TC_BC_01 {
         }*/
         if (!compressionFormat.equals("snappy")) {
             issueCount++;
-            System.out.println("here 3");
-            System.out.println(issueCount);
-
+            Reporter.log("Issue in Compression Format : " + compressionFormat);
         }
         if (!dataFormat.equals("parquet")) {
             issueCount++;
-            System.out.println("here 2");
-            System.out.println(issueCount);
-
+            Reporter.log("Issue in dataFormat  :" + dataFormat);
         }
 
-        System.out.println(dagId);
         if (!dagId.equals("batch_raw_data_ingestion")) {
             issueCount++;
-            System.out.println("here 1");
-            System.out.println(issueCount);
-
+            Reporter.log("Issue in dagId : " + dagId);
         }
+
+
         Assert.assertEquals(issueCount, 0);
     }
 }
