@@ -15,6 +15,8 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -22,7 +24,7 @@ import java.util.logging.Logger;
 public class TC_BC_04 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private final Integer issueCount = 0;
-
+    String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     @Test()
     void validate() throws IOException {
         AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/kalyan/ETE_RAW/10061/2022/06/");
@@ -43,8 +45,8 @@ public class TC_BC_04 {
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String manifest_prefix = bc.getPrefix();
-
+        String BucketPrefix = bc.getPrefix();
+        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);

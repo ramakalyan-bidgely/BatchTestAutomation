@@ -29,18 +29,14 @@ public class TC_BC_02 {
     //have to prepare data size of 300mb
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
+
     private Integer issueCount = 0;
-
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-
     @Test()
     public void validate() throws IOException {
 
         String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
-        String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/10061/" + dt + "/" + getClass().getSimpleName() + "/";
 
-        long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
         InputConfigParser ConfigParser = new InputConfigParser();
 
@@ -52,9 +48,19 @@ public class TC_BC_02 {
 
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String manifest_prefix = bc.getPrefix();
+        String BucketPrefix = bc.getPrefix();
         Long dataSizeInbytes = bc.getDataSizeInBytes();
 
+        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+        //Local to S3
+        //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
+        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
+        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
+
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
 
         int SIZE_BASED_CNT = 0;
 
@@ -65,11 +71,11 @@ public class TC_BC_02 {
         for (String str : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
             if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) SIZE_BASED_CNT++;
-            else if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED"))  issueCount++;
+            else if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) issueCount++;
         }
 
 
-         Assert.assertEquals(Optional.ofNullable(issueCount), 0);
+        Assert.assertEquals(Optional.ofNullable(issueCount), 0);
     }
 
 }

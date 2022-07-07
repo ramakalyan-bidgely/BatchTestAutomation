@@ -127,16 +127,13 @@ public class BatchCountValidator {
         return DataAccumulatedSize;
     }
 
-    public static long SizOfManifestObjects(String s3Bucket, JsonArray batchObjects){
-        long DataAccumulatedSize=0;
-        for (JsonElement arr:batchObjects){
+    public static long SizOfManifestObjects(String s3Bucket, JsonArray batchObjects) {
+        long DataAccumulatedSize = 0;
+        for (JsonElement arr : batchObjects) {
             long ObjectLength = amazons3Client.getObject(new GetObjectRequest(s3Bucket, arr.getAsString())).getObjectMetadata().getContentLength();
-            DataAccumulatedSize+=ObjectLength;
-
+            DataAccumulatedSize += ObjectLength;
         }
-
         return DataAccumulatedSize;
-
     }
 
 

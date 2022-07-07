@@ -2,14 +2,20 @@ package com.batch.utils;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.TransferProgress;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.batch.utils.sql.batch.BatchDetails.getLatest_modified_time;
 
 /**
  * @author Rama Kalyan
@@ -71,11 +77,12 @@ public class S3FileTransferHandler<Stringt> {
         }
         return paths;
     }
-    public static String[] listFiles(String path){
+
+    public static String[] listFiles(String path) {
         //create a string[] pathnames call the function and store it in pathnames loop through it
         String[] pathnames;
         File f = new File(path);
-        pathnames= f.list();
+        pathnames = f.list();
         return pathnames;
     }
 
@@ -123,5 +130,25 @@ public class S3FileTransferHandler<Stringt> {
     }
 
 
+    public static long S3toS3TransferFiles(AmazonS3URI DEST_URI, AmazonS3URI SRC_URI) {
+
+        AmazonS3Client amazons3Client = new AmazonS3Client();
+        long DataAccumulatedSize = 0;
+        ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket());
+        ArrayList<S3ObjectSummary> summ = new ArrayList<>();
+        ListObjectsV2Result objs = null;
+        do {
+            objs = amazons3Client.listObjectsV2(ListObjreq);
+            System.out.println(objs.getObjectSummaries() + "\n");
+            summ.addAll(objs.getObjectSummaries());
+            ListObjreq.setContinuationToken(objs.getNextContinuationToken());
+        } while (objs.isTruncated());
+
+        for (S3ObjectSummary summary : summ) {
+            amazons3Client.copyObject(summary.getBucketName(),summary.getKey(),DEST_URI.getBucket(),summary.getKey());
+            DataAccumulatedSize+= summary.getSize();
+        }
+        return DataAccumulatedSize;
+    }
 }
 
