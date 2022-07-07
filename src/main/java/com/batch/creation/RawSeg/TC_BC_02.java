@@ -1,6 +1,7 @@
 package com.batch.creation.RawSeg;
 
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.amazonaws.services.s3.model.Bucket;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.utils.InputConfig;
@@ -36,7 +37,7 @@ public class TC_BC_02 {
     @Test()
     public void validate() throws IOException, InterruptedException {
 
-        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
+        String jsonFilePath = "./raw_batch_config.json";
 
 
         InputConfigParser ConfigParser = new InputConfigParser();
@@ -59,14 +60,15 @@ public class TC_BC_02 {
         //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
         String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName() + "/";
+
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI, BucketPrefix);
 
         long ExpectedNoOfBatches = DataAccumulatedSize / dataSizeInbytes;
 
 
-        //Waiting for Batch Creation Service to trigger and complete
+        //Waiting for Batch Creation Service to be execute and complete
         Thread.sleep(10000);
 
         int SIZE_BASED_CNT = 0;

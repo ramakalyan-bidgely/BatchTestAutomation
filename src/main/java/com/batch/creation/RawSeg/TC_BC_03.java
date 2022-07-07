@@ -44,8 +44,6 @@ public class TC_BC_03 {
 
 
 
-
-
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
 
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);

@@ -33,20 +33,29 @@ public class TC_BC_01 {
 
     public void validate() throws IOException {
 
+        String jsonFilePath = "./raw_batch_config.json";
+
+
         InputConfigParser ConfigParser = new InputConfigParser();
 
-        AmazonS3URI batchInputConfigPath = new AmazonS3URI("s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json");
+        JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
+        JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
 
-        AmazonS3Client amazonS3Client = new AmazonS3Client();
-        S3Object batchInputconfig = amazonS3Client.getObject(batchInputConfigPath.getBucket(), batchInputConfigPath.getKey());
-        String batchConfig = ManifestFileParser.displayTextInputStream(batchInputconfig.getObjectContent());
-
-
-        JsonObject batchConfigs = ManifestFileParser.convertingToJsonObject(batchConfig);
-
-        JsonObject bcs = batchConfigs.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
-
-        InputConfig bc = InputConfigParser.getInputConfig(bcs);
+        InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);
+//        InputConfigParser ConfigParser = new InputConfigParser();
+//
+//        AmazonS3URI batchInputConfigPath = new AmazonS3URI("s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json");
+//
+//        AmazonS3Client amazonS3Client = new AmazonS3Client();
+//        S3Object batchInputconfig = amazonS3Client.getObject(batchInputConfigPath.getBucket(), batchInputConfigPath.getKey());
+//        String batchConfig = ManifestFileParser.displayTextInputStream(batchInputconfig.getObjectContent());
+//
+//
+//        JsonObject batchConfigs = ManifestFileParser.convertingToJsonObject(batchConfig);
+//
+//        JsonObject bcs = batchConfigs.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
+//
+//        InputConfig bc = InputConfigParser.getInputConfig(bcs);
 
         int pilotId = bc.getPilotId();
         String s3bucket = bc.getBucket();
@@ -61,7 +70,7 @@ public class TC_BC_01 {
         int parallelBatchesIfIndependent = bc.getParallelBatchesIfIndependent();
         int maxTries = bc.getMaxTries();
         String dagId = bc.getDagId();
-
+        System.out.println("dagId = " + dagId);
 
         Reporter.log("Validating Batch Creation components for pilot : {}", pilotId);
 

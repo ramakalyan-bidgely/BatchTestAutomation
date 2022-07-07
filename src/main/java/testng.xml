@@ -8,10 +8,10 @@
             <class name="com.batch.creation.RawSeg.TC_BC_01"/>
         </classes>
     </test>
-    <test name="test2">
+   <!-- <test name="test2">
         <classes>
             <class name="com.batch.creation.RawSeg.TC_BC_02"/>
         </classes>
-    </test>
+    </test>-->
 </suite>
 

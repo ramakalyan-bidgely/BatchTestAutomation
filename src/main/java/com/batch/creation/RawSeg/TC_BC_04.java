@@ -26,6 +26,7 @@ public class TC_BC_04 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private final Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+
     @Test()
     void validate() throws IOException {
         //AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/kalyan/ETE_RAW/10061/2022/06/");
@@ -54,10 +55,10 @@ public class TC_BC_04 {
         String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
         //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName() + "/";
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI, BucketPrefix);
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
@@ -67,7 +68,7 @@ public class TC_BC_04 {
             JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
             JsonArray batchObjects = (jsonObject.get("batchObjects").getAsJsonArray());
             for (JsonElement element : batchObjects) {
-                if (element.getAsString().contains(fileName)) issueCount++;
+                if (!element.getAsString().contains(fileName)) issueCount++;
             }
 
         }

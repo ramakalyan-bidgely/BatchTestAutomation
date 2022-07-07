@@ -7,13 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class InputConfigParser {
-    public static String readFileAsString(String file) throws Exception
-    {
+    public static String readFileAsString(String file) throws Exception {
         return new String(Files.readAllBytes(Paths.get(file)));
     }
 
 
-    public static JsonObject getBatchConfig(String jsonFilePath){
+    public static JsonObject getBatchConfig(String jsonFilePath) {
         try {
             String json = readFileAsString(jsonFilePath);
             JsonObject json_object = new JsonParser().parse(json).getAsJsonObject();
@@ -26,9 +25,10 @@ public class InputConfigParser {
     }
 
 
-    public static InputConfig getInputConfig(JsonObject jsonObject)
-    {
-        InputConfig config=new InputConfig();
+    public static InputConfig getInputConfig(JsonObject jsonObject) {
+        InputConfig config = new InputConfig();
+
+
         config.setComponent(jsonObject.get("component").getAsString());
         config.setPilotId(jsonObject.get("pilotId").getAsInt());
         config.setWorkerInstanceCount(jsonObject.getAsJsonObject("emrParams").get("workerInstanceCount").getAsInt());
@@ -47,7 +47,7 @@ public class InputConfigParser {
         config.setNextBatchDependentOnPrev(jsonObject.getAsJsonObject("batchSchedulingConfig").get("isNextBatchDependentOnPrev").getAsBoolean());
         config.setParallelBatchesIfIndependent(jsonObject.getAsJsonObject("batchSchedulingConfig").get("parallelBatchesIfIndependent").getAsInt());
         config.setMaxTries(jsonObject.getAsJsonObject("batchSchedulingConfig").get("maxTries").getAsInt());
-        config.setComponent(jsonObject.getAsJsonObject("batchSchedulingConfig").get("dagId").getAsString());
+        config.setDagId(jsonObject.getAsJsonObject("batchSchedulingConfig").get("dagId").getAsString());
         return config;
 
 
