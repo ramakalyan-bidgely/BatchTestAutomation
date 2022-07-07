@@ -62,6 +62,7 @@ public class TC_BC_02 {
 
         long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
 
+
         int SIZE_BASED_CNT = 0;
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);

@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 @Test
 public class TC_BC_04 {
+
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private final Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
