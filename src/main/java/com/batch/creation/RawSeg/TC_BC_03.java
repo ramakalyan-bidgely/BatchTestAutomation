@@ -1,16 +1,20 @@
 package com.batch.creation.RawSeg;
 
+import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
+import com.batch.utils.S3FileTransferHandler;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -19,7 +23,7 @@ import java.util.logging.Logger;
 public class TC_BC_03 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private final Integer issueCount = 0;
-
+    String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     @Test()
     public void validate() throws IOException {
         int issueCount = 0;
@@ -35,8 +39,21 @@ public class TC_BC_03 {
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String manifest_prefix = bc.getPrefix();
-        //String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+        String BucketPrefix = bc.getPrefix();
+        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+
+
+        //Local to S3
+        //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
+        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
+        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
+
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+
+
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
 
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);

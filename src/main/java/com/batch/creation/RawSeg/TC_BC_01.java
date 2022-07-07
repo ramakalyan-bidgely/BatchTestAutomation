@@ -59,6 +59,7 @@ public class TC_BC_01 {
         boolean isNextBatchDependentOnPrev = bc.isNextBatchDependentOnPrev();
         int parallelBatchesIfIndependent = bc.getParallelBatchesIfIndependent();
         int maxTries = bc.getMaxTries();
+        String dagId = bc.getDagId();
         System.out.println(pilotId);
 
 
@@ -87,58 +88,69 @@ public class TC_BC_01 {
         }
         if (!isBucketAvailable) {
             issueCount++;
+            System.out.println("here 12");
             System.out.println(issueCount);
-
-
         }
         if (!isDataSizeConfigured) {
             issueCount++;
+            System.out.println("here 11");
             System.out.println(issueCount);
         }
         if (!isIntervalInSecConfigured) {
             issueCount++;
+            System.out.println("here 10");
             System.out.println(issueCount);
         }
         if (!isMaxLookupDaysConfigured) {
             issueCount++;
+            System.out.println("here 9");
             System.out.println(issueCount);
         }
         if (!directoryStructure.equals("Firehose")) {
             issueCount++;
+            System.out.println("here 8");
             System.out.println(issueCount);
 
         }
-        if (!skipSucceededTasksOnRetry) {
+        /*if (!skipSucceededTasksOnRetry) {
             issueCount++;
+            System.out.println("here 7");
             System.out.println(issueCount);
 
-        }
-        if (!isNextBatchDependentOnPrev) {
+        } if (!isNextBatchDependentOnPrev) {
             issueCount++;
+            System.out.println("here 6");
             System.out.println(issueCount);
         }
         if (parallelBatchesIfIndependent != 2) {
             issueCount++;
+            System.out.println("here 5");
             System.out.println(issueCount);
 
         }
         if (maxTries != 2) {
             issueCount++;
+            System.out.println("here 4");
             System.out.println(issueCount);
 
-        }
+        }*/
         if (!compressionFormat.equals("snappy")) {
             issueCount++;
+            System.out.println("here 3");
             System.out.println(issueCount);
 
         }
         if (!dataFormat.equals("parquet")) {
             issueCount++;
+            System.out.println("here 2");
             System.out.println(issueCount);
 
         }
-        if (!component.equals("batch_raw_data_ingestion")) {
+
+        System.out.println(dagId);
+        if (!dagId.equals("batch_raw_data_ingestion")) {
             issueCount++;
+            System.out.println("here 1");
             System.out.println(issueCount);
 
         }
