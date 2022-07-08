@@ -7,13 +7,8 @@ package com.batch.creation.RawSeg;
 
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.util.IOUtils;
 import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
-import com.batch.utils.ManifestFileParser;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
 import org.testng.Reporter;
@@ -70,7 +65,6 @@ public class TC_BC_01 {
         int parallelBatchesIfIndependent = bc.getParallelBatchesIfIndependent();
         int maxTries = bc.getMaxTries();
         String dagId = bc.getDagId();
-        System.out.println("dagId = " + dagId);
 
         Reporter.log("Validating Batch Creation components for pilot : {}", pilotId);
 
@@ -101,10 +95,10 @@ public class TC_BC_01 {
             issueCount++;
             Reporter.log("Bucket is not available, Verify the Input Configuration file : " + s3bucket);
         }
-        if (!isPrefixAvailable) {
+        /*if (!isPrefixAvailable) {
             issueCount++;
             Reporter.log("Prefix is not available, Verify the Input Configuration file : " + DataPathPrefix);
-        }
+        }*/
         if (!isDataSizeConfigured) {
             issueCount++;
             Reporter.log("Issue in Configured Threshold of DataSizeConfigured : " + dataSizeInBytes);
@@ -125,23 +119,23 @@ public class TC_BC_01 {
         }
         /*if (!skipSucceededTasksOnRetry) {
             issueCount++;
-            System.out.println("here 7");
+
             System.out.println(issueCount);
 
         } if (!isNextBatchDependentOnPrev) {
             issueCount++;
-            System.out.println("here 6");
+
             System.out.println(issueCount);
         }
         if (parallelBatchesIfIndependent != 2) {
             issueCount++;
-            System.out.println("here 5");
+
             System.out.println(issueCount);
 
         }
         if (maxTries != 2) {
             issueCount++;
-            System.out.println("here 4");
+
             System.out.println(issueCount);
 
         }*/

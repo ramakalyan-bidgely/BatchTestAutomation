@@ -5,7 +5,7 @@
     <parameter name="DEST_S3_PATH" value="s3://bidgely-adhoc-batch-qa/kalyan/Incoming"/>
     <test name="test1">
         <classes>
-            <class name="com.batch.creation.RawSeg.TC_BC_01"/>
+            <class name="com.batch.creation.RawSeg.TC_BC_02"/>
         </classes>
     </test>
    <!-- <test name="test2">

@@ -163,24 +163,26 @@ public class S3FileTransferHandler<Stringt> {
     }
 
 
-    public static long S3toS3TransferFiles(AmazonS3URI DEST_URI, AmazonS3URI SRC_URI, String BucketPrefix) {
+    public static long S3toS3TransferFiles(AmazonS3URI DEST_URI, AmazonS3URI SRC_URI, String prefix) {
         long DataAccumulatedSize = 0;
         try {
-            final AmazonS3 amazons3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
+            //final AmazonS3 amazons3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
+            AmazonS3Client amazonS3Client = new AmazonS3Client();
 
-            ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket()).withPrefix(BucketPrefix);
+            ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket()).withPrefix(prefix);
             ArrayList<S3ObjectSummary> summ = new ArrayList<>();
             ListObjectsV2Result objs = null;
             do {
-                objs = amazons3Client.listObjectsV2(ListObjreq);
+                objs = amazonS3Client.listObjectsV2(ListObjreq);
                 summ.addAll(objs.getObjectSummaries());
+
                 ListObjreq.setContinuationToken(objs.getNextContinuationToken());
             } while (objs.isTruncated());
 
             for (S3ObjectSummary summary : summ) {
-                CopyObjectRequest copyObjRequest = new CopyObjectRequest(summary.getBucketName(), summary.getKey(), DEST_URI.getBucket(), summary.getKey());
-                amazons3Client.copyObject(copyObjRequest);
-                //amazons3Client.copyObject(summary.getBucketName(),summary.getKey(),DEST_URI.getBucket(),summary.getKey());
+                List<String> ObjName = Arrays.asList(summary.getKey().split("/"));
+                CopyObjectRequest copyObjRequest = new CopyObjectRequest(summary.getBucketName(), summary.getKey(), DEST_URI.getBucket(), DEST_URI.getKey() + "/" + ObjName.get(ObjName.size() - 1));
+                amazonS3Client.copyObject(copyObjRequest);
                 DataAccumulatedSize += summary.getSize();
             }
 

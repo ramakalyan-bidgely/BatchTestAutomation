@@ -1,7 +1,6 @@
 package com.batch.creation.RawSeg;
 
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.Bucket;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.utils.InputConfig;
@@ -13,12 +12,12 @@ import org.testng.Assert;
 import org.testng.Reporter;
 import org.testng.annotations.Test;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 
@@ -56,15 +55,14 @@ public class TC_BC_02 {
         String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
         //Local to S3
         //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
-        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
-        AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName() + "/";
+        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
+        AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
+        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI, BucketPrefix);
-
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI, SRC_URI.getKey());
+        System.out.println("Data Accumulated ......" + DataAccumulatedSize);
         long ExpectedNoOfBatches = DataAccumulatedSize / dataSizeInbytes;
 
 
