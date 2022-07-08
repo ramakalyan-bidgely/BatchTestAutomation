@@ -61,7 +61,7 @@ public class TC_BC_02 {
         String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI, SRC_URI.getKey());
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
         System.out.println("Data Accumulated ......" + DataAccumulatedSize);
         long ExpectedNoOfBatches = DataAccumulatedSize / dataSizeInbytes;
 

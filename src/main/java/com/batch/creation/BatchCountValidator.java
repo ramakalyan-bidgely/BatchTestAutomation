@@ -132,6 +132,7 @@ public class BatchCountValidator {
         for (JsonElement arr : batchObjects) {
             long ObjectLength = amazons3Client.getObject(new GetObjectRequest(s3Bucket, arr.getAsString())).getObjectMetadata().getContentLength();
             DataAccumulatedSize += ObjectLength;
+
         }
         return DataAccumulatedSize;
     }
@@ -142,7 +143,6 @@ public class BatchCountValidator {
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, SRC);
         return DataAccumulatedSize;
     }
-
 
     //get Object list from batchManifestFile  and calculate size of those files
 /*

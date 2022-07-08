@@ -163,13 +163,13 @@ public class S3FileTransferHandler<Stringt> {
     }
 
 
-    public static long S3toS3TransferFiles(AmazonS3URI DEST_URI, AmazonS3URI SRC_URI, String prefix) {
+    public static long S3toS3TransferFiles(AmazonS3URI DEST_URI, AmazonS3URI SRC_URI) {
         long DataAccumulatedSize = 0;
         try {
             //final AmazonS3 amazons3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
             AmazonS3Client amazonS3Client = new AmazonS3Client();
 
-            ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket()).withPrefix(prefix);
+            ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket()).withPrefix(SRC_URI.getKey());
             ArrayList<S3ObjectSummary> summ = new ArrayList<>();
             ListObjectsV2Result objs = null;
             do {
