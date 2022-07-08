@@ -20,14 +20,12 @@ public class InputConfigParser {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
 
     public static InputConfig getInputConfig(JsonObject jsonObject) {
-        InputConfig config = new InputConfig();
 
+        InputConfig config = new InputConfig();
 
         config.setComponent(jsonObject.get("component").getAsString());
         config.setPilotId(jsonObject.get("pilotId").getAsInt());

@@ -8,8 +8,11 @@ import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
 import com.google.gson.JsonObject;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import org.testng.Assert;
 import org.testng.Reporter;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import javax.xml.crypto.Data;
@@ -20,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
+
 
 /**
  * @author Rama Kalyan
@@ -29,24 +34,21 @@ public class TC_BC_02 {
 
     //have to prepare data size of 300mb
 
+
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     private Integer issueCount = 0;
 
     @Test()
-    public void validate() throws IOException, InterruptedException {
+    @Parameters("batchConfigPath")
+    public void validate(String batchConfigPath) throws IOException, InterruptedException {
 
-        String jsonFilePath = "./raw_batch_config.json";
+        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
+
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
 
-        InputConfigParser ConfigParser = new InputConfigParser();
-
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
-        JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
-
-        InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);
         int pilotId = bc.getPilotId();
-
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
@@ -61,33 +63,41 @@ public class TC_BC_02 {
         String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI, SRC_URI.getKey());
-        System.out.println("Data Accumulated ......" + DataAccumulatedSize);
-        long ExpectedNoOfBatches = DataAccumulatedSize / dataSizeInbytes;
+        // long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        //System.out.println("Data Accumulated ...... " + DataAccumulatedSize);
+        long ExpectedNoOfBatches = 1;
 
-
+        System.out.println("Waiting for batch creation to be executed and complete .. ");
         //Waiting for Batch Creation Service to be execute and complete
-        Thread.sleep(10000);
+        //Thread.sleep(600000);
 
         int SIZE_BASED_CNT = 0;
 
-        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+        System.out.println("Getting latest batch creation time");
 
-        System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+        try {
 
-        List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
-        // now we need to verify the manifest files and check whether the object is present in it or not
-        for (String str : GeneratedBatches) {
-            JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
-            if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) {
-                SIZE_BASED_CNT++;
-                issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
-            } else {
-                issueCount++;
+            Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+
+            System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+
+            List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
+            // now we need to verify the manifest files and check whether the object is present in it or not
+            for (String str : GeneratedBatches) {
+                JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
+                if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) {
+                    SIZE_BASED_CNT++;
+                    issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
+                } else {
+                    issueCount++;
+                }
+                if (issueCount > 0) {
+                    Reporter.log("Generated batches more than expected number of Batches");
+                }
             }
-            if (issueCount > 0) {
-                Reporter.log("Generated batches more than expected number of Batches");
-            }
+        } catch (Throwable e) {
+            // print stack trace
+            e.printStackTrace();
         }
 
         Assert.assertEquals(issueCount, 0);

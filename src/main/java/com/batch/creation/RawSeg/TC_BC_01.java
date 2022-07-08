@@ -2,41 +2,42 @@ package com.batch.creation.RawSeg;
 
 
 /**
- * @autor rama kalyan
+ * @autor Rama kalyan
  */
 
 
 import com.amazonaws.services.s3.AmazonS3Client;
+
+
 import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
 import org.testng.Reporter;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
+
 
 @Test()
 public class TC_BC_01 {
+
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private Integer issueCount = 0;
 
     @Test
+    @Parameters("batchConfigPath")
+    public void validate(String batchConfigPath) throws IOException {
 
-    public void validate() throws IOException {
+        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        String jsonFilePath = "./raw_batch_config.json";
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
-
-        InputConfigParser ConfigParser = new InputConfigParser();
-
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
-        JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
-
-        InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);
 //        InputConfigParser ConfigParser = new InputConfigParser();
 //
 //        AmazonS3URI batchInputConfigPath = new AmazonS3URI("s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json");
@@ -71,7 +72,7 @@ public class TC_BC_01 {
         AmazonS3Client amazons3Client = new AmazonS3Client();
         boolean isBucketAvailable = amazons3Client.doesBucketExistV2(s3bucket);
 
-        boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix);
+        //boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix);
 
         Long dataSizeInBytes = bc.getDataSizeInBytes();
         boolean isDataSizeConfigured = dataSizeInBytes > 0;
@@ -79,6 +80,7 @@ public class TC_BC_01 {
 
         //validating intervalInSec Threshold
         long intervalInSec = bc.getIntervalInSec();
+
         boolean isIntervalInSecConfigured = intervalInSec > 0;
 
 
@@ -141,18 +143,17 @@ public class TC_BC_01 {
         }*/
         if (!compressionFormat.equals("snappy")) {
             issueCount++;
-            Reporter.log("Issue in Compression Format : " + compressionFormat);
+            Reporter.log("Compression format is invalid : " + compressionFormat);
         }
         if (!dataFormat.equals("parquet")) {
             issueCount++;
-            Reporter.log("Issue in dataFormat  :" + dataFormat);
+            Reporter.log("data Format is invalid  :" + dataFormat);
         }
 
         if (!dagId.equals("batch_raw_data_ingestion")) {
             issueCount++;
             Reporter.log("Issue in dagId : " + dagId);
         }
-
 
         Assert.assertEquals(issueCount, 0);
     }

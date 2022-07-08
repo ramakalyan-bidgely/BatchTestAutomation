@@ -48,7 +48,7 @@ public class TC_BC_02 {
         //Reading Properties file
         FileReader PropReader = null;
         try {
-            PropReader = new FileReader("src/main/resources/Batch.properties");
+            PropReader = new FileReader("src/main/resources/batch.properties");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

@@ -58,7 +58,7 @@ public class TC_BC_05 {
         String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI,BucketPrefix);
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);

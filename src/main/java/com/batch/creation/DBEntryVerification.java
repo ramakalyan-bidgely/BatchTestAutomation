@@ -3,7 +3,9 @@ package com.batch.creation;
 
 import com.batch.utils.sql.batch.BatchDetails;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Component;
 import org.testng.Reporter;
 
 import java.sql.Timestamp;
@@ -13,10 +15,14 @@ import java.util.UUID;
 /**
  * @author Rama Kalyan
  */
+@Component
 public class DBEntryVerification {
 
-    static ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("batch-dao.xml");
-    public static BatchJDBCTemplate batchJDBCTemplate = (BatchJDBCTemplate) context.getBean("BatchJDBCTemplate");
+
+    public static ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath*:batch-dao.xml");
+
+
+    public static BatchJDBCTemplate batchJDBCTemplate = (BatchJDBCTemplate) context.getBean("batchjdbcTemplate");
 
     public static Boolean validate(UUID batchId) {
         if (batchId.version() == 4) {
