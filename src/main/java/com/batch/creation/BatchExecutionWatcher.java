@@ -3,14 +3,19 @@ package com.batch.creation;
 
 import java.util.Calendar;
 
+import static java.lang.Math.floorDiv;
+
 public class BatchExecutionWatcher {
 
 
     public static void bewatch(int baseMinute) {
         boolean waitFlag = true;
+        Calendar dt = Calendar.getInstance();
+
         while (waitFlag) {
             Calendar date = Calendar.getInstance();
             int CalMinute = date.get(Calendar.MINUTE);
+            //int ElapseMinute = (floorDiv(CalMinute, 10) + 10 + baseMinute) - CalMinute;
             System.out.println(date.getTime() + " -> waiting for Batch Creation Service to complete !");
             if (CalMinute % 10 == baseMinute) {
                 waitFlag = false;

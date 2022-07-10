@@ -17,10 +17,11 @@ public class ValidateManifestFile {
     UUID batchId = null;
 
 
-    public void ManifestFileValidation(String manifestObject, InputConfig InputConfigFile) {
+    public static void ManifestFileValidation(String s3Bucket, String manifestObject, InputConfig InputConfigFile) {
         int issueCount = 0;
 
-        JsonObject mObj = ManifestFileParser.getManifestFile(manifestObject);
+        //JsonObject mObj = ManifestFileParser.getManifestFile(manifestObject);
+        JsonObject mObj = ManifestFileParser.getManifestDetails(s3Bucket, manifestObject);
         ManifestResponse mfResponse = ManifestFileParser.getManifestResponse(mObj);
 
         Boolean is_BatchObjects_Available = mObj.has("batchObjects");
@@ -70,7 +71,10 @@ public class ValidateManifestFile {
         if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file " + manifestObject, true);
         }
+
+
         if (is_Batch_Id_Available) {
+            System.out.println("Validating Batch ID");
             if (!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()))) issueCount++;
         }
         if (!(mfResponse.getPilotId() == InputConfigFile.getPilotId())) {
@@ -79,7 +83,7 @@ public class ValidateManifestFile {
         if (!(mfResponse.getComponent() == InputConfigFile.getComponent())) {
             issueCount++;
         }
-        if (mfResponse.getDataSizeInBytes() >= InputConfigFile.getDataSizeInBytes()) {
+        if (mfResponse.getbatchSizeInBytes() >= InputConfigFile.getDataSizeInBytes()) {
             if (!ManifestResponse.getbatchCreationType().equals("SIZE_BASED")) issueCount++;
         }
 
@@ -88,7 +92,7 @@ public class ValidateManifestFile {
             issueCount++;
         }
 
-        if ((mfResponse.getDataSizeInBytes()).equals(BatchCountValidator.SizeOfObjects(mfResponse.getBucket(), ManifestResponse.getBatchObjects()))) {
+        if ((mfResponse.getbatchSizeInBytes()).equals(BatchCountValidator.SizeOfObjects(mfResponse.getBucket(), ManifestResponse.getBatchObjects()))) {
             issueCount++;
         }
         if (mfResponse.getDatasetType().equals(InputConfigFile.getDatasetType())) {

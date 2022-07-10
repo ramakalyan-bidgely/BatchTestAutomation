@@ -1,6 +1,5 @@
 package com.batch.utils.sql.batch;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 
 @Component
@@ -41,14 +41,13 @@ public class BatchJDBCTemplate {
         return batches;
     }
 
-    public Timestamp getLatestModifiedTime(Integer pilotId, String component) {
+    public Map<String, Object> getLatestObjectDetails(Integer pilotId, String component) {
 
-        String SQL = "select batch_creation_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
+        String SQL = "select latest_modified_key,latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
         try {
-            Timestamp latestModifiedTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
-            System.out.println("Batch Creation Time : " + latestModifiedTime);
-            return latestModifiedTime;
-
+            //Timestamp latestModifiedTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
+            Map<String, Object> LatestObjectDetails = jdbcTemplateObject.queryForMap(SQL, new Object[]{pilotId, component});
+            return LatestObjectDetails;
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -59,9 +58,7 @@ public class BatchJDBCTemplate {
         String SQL = "select batch_creation_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
         try {
             Timestamp batchCreationTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
-            System.out.println("Batch Creation Time : " + batchCreationTime);
             return batchCreationTime;
-
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

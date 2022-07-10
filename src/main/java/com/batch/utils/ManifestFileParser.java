@@ -62,9 +62,9 @@ public class ManifestFileParser {
         ManifestResponse config = new ManifestResponse();
         config.setComponent(jsonObject.get("component").getAsString());
         config.setPilotId(jsonObject.get("pilotId").getAsInt());
-        config.setWorkerInstanceCount(jsonObject.getAsJsonObject("emrParams").get("workerInstanceCount").getAsInt());
-        config.setDiskSizeInGb(jsonObject.getAsJsonObject("emrParams").get("diskSizeInGb").getAsInt());
-        config.setVolumePerInstance(jsonObject.getAsJsonObject("emrParams").get("volumePerInstance").getAsInt());
+        config.setWorkerInstanceCount(jsonObject.getAsJsonObject("emrParameters").get("workerInstanceCount").getAsInt());
+        config.setDiskSizeInGb(jsonObject.getAsJsonObject("emrParameters").get("diskSizeInGb").getAsInt());
+        config.setVolumePerInstance(jsonObject.getAsJsonObject("emrParameters").get("volumePerInstance").getAsInt());
         config.setSkipSucceededTasksOnRetry(jsonObject.getAsJsonObject("batchSchedulingConfig").get("skipSucceededTasksOnRetry").getAsBoolean());
         config.setNextBatchDependentOnPrev(jsonObject.getAsJsonObject("batchSchedulingConfig").get("isNextBatchDependentOnPrev").getAsBoolean());
         config.setParallelBatchesIfIndependent(jsonObject.getAsJsonObject("batchSchedulingConfig").get("parallelBatchesIfIndependent").getAsInt());
@@ -74,9 +74,11 @@ public class ManifestFileParser {
         config.setbatchId(jsonObject.get("batchId").getAsString());
         config.setbatchCreationType(jsonObject.get("batchCreationType").getAsString());
         config.setbatchCreationTime(jsonObject.get("batchCreationTime").getAsString());
+        config.setlatestObjectModifiedTime(jsonObject.get("latestObjectModifiedTime").getAsString());
         config.setlatestObjectKey(jsonObject.get("latestObjectKey").getAsString());
         config.setBatchObjects((jsonObject.get("batchObjects").getAsJsonArray()));
         config.setClusterName(jsonObject.getAsJsonObject("emrParameters").get("clusterName").getAsString());
+        config.setbatchSizeInBytes(jsonObject.getAsJsonObject("batchSizeInBytes").getAsLong());
         return config;
     }
 

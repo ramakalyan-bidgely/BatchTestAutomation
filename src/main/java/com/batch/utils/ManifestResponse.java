@@ -36,13 +36,17 @@ public class ManifestResponse {
     private static JsonArray batchObjects;
 
 
+    public static JsonArray getBatchObjects() {
+        return batchObjects;
+    }
 
-    public static JsonArray getBatchObjects(){return batchObjects;}
-    public void setBatchObjects(JsonArray batchObjects){this.batchObjects= batchObjects;}
+    public void setBatchObjects(JsonArray batchObjects) {
+        this.batchObjects = batchObjects;
+    }
+
     public String getComponent() {
         return component;
     }
-
 
 
     public void setComponent(String component) {
@@ -108,8 +112,16 @@ public class ManifestResponse {
     public String getPrefix() {
         return prefix;
     }
-    public String getClusterName(){return clusterName;}
-    public void  setClusterName(String clusterName){this.clusterName=clusterName;};
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    ;
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
@@ -147,7 +159,7 @@ public class ManifestResponse {
         this.compressionFormat = compressionFormat;
     }
 
-    public Long getDataSizeInBytes() {
+    public Long getbatchSizeInBytes() {
         return batchSizeInBytes;
     }
 
@@ -203,7 +215,11 @@ public class ManifestResponse {
         this.dagId = dagId;
     }
 
-    public String getbatchId(){return batchId;};
+    public String getbatchId() {
+        return batchId;
+    }
+
+    ;
 
     public void setbatchId(String batchId) {
         this.batchId = batchId;
@@ -223,5 +239,13 @@ public class ManifestResponse {
 
     public void setlatestObjectKey(String latestObjectKey) {
         this.latestObjectKey = latestObjectKey;
+    }
+
+    public void setlatestObjectModifiedTime(String latestObjectModifiedTime) {
+        this.latestObjectModifiedTime = Long.valueOf(latestObjectModifiedTime);
+    }
+
+    public void setbatchSizeInBytes(long batchSizeInBytes) {
+        this.batchSizeInBytes = batchSizeInBytes;
     }
 }
