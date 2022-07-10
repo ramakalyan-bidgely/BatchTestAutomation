@@ -2,7 +2,9 @@
 
 <suite name="BatchCreationQASuite" verbose="2">
     <parameter name="batchConfigPath"
-               value="C:\Users\BizAct-150\IdeaProjects\BatchTestAutomation\src\main\resources\raw_batch_config.json"/>
+               value="raw_batch_config.json"/>
+    <parameter name="baseMinute"
+               value="1"/>
     <test name="test1">
         <classes>
             <class name="com.batch.creation.RawSeg.TC_BC_01"/>
@@ -11,6 +13,11 @@
     <test name="test2">
         <classes>
             <class name="com.batch.creation.RawSeg.TC_BC_02"/>
+        </classes>
+    </test>
+    <test name="test3">
+        <classes>
+            <class name="com.batch.creation.RawSeg.TC_BC_03"/>
         </classes>
     </test>
 </suite>

@@ -47,7 +47,7 @@ public class TC_BC_08 {
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
        for(String str: GeneratedBatches){
-            JsonObject jsonObject= ManifestFileParser.batchConfigDetails(s3Bucket,str);
+            JsonObject jsonObject= ManifestFileParser.getManifestDetails(s3Bucket, str);
             if(jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) issueCount++;
         }
 

@@ -41,6 +41,19 @@ public class BatchJDBCTemplate {
         return batches;
     }
 
+    public Timestamp getLatestModifiedTime(Integer pilotId, String component) {
+
+        String SQL = "select batch_creation_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
+        try {
+            Timestamp latestModifiedTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
+            System.out.println("Batch Creation Time : " + latestModifiedTime);
+            return latestModifiedTime;
+
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
     public Timestamp getLatestBatchCreationTime(Integer pilotId, String component) {
 
         String SQL = "select batch_creation_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";

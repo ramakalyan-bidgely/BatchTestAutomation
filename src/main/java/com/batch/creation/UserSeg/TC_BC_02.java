@@ -59,7 +59,7 @@ public class TC_BC_02 {
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         // now we need to verify the manifest files and check whether the object is present in it or not
         for (String str : GeneratedBatches) {
-            JsonObject jsonObject = ManifestFileParser.batchConfigDetails(s3Bucket, str);
+            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
             if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) SIZE_BASED_CNT++;
         }
 

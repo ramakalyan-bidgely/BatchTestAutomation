@@ -49,7 +49,7 @@ public class TC_BC_19 {
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         for(String str: GeneratedBatches){
-            JsonObject jsonObject= ManifestFileParser.batchConfigDetails(s3Bucket,str);
+            JsonObject jsonObject= ManifestFileParser.getManifestDetails(s3Bucket, str);
             JsonArray batchObjects=(jsonObject.get("batchObjects").getAsJsonArray());
             //Now we need to verify whether the files are there in the batchObjects or not.
 

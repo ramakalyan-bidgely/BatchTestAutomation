@@ -61,7 +61,7 @@ public class TC_BC_12{
         // now we need to verify the manifest files and check whether the object is present in it or not
         // the file shouldn't be picked by the batch creation process because of the wrong file naming convention
         for(String str: GeneratedBatches){
-            JsonObject jsonObject= ManifestFileParser.batchConfigDetails(s3Bucket,str);
+            JsonObject jsonObject= ManifestFileParser.getManifestDetails(s3Bucket, str);
             if(!jsonObject.get("batchCreationType").getAsString().equals("TIME_BASED")) issueCount++;
         }
 

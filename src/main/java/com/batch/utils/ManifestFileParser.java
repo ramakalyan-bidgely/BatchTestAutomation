@@ -16,6 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ManifestFileParser {
+
+    static AmazonS3Client amazons3Client = new AmazonS3Client();
+
     public static String readFileAsString(String file) throws Exception {
         return new String(Files.readAllBytes(Paths.get(file)));
     }
@@ -30,20 +33,7 @@ public class ManifestFileParser {
             throw new RuntimeException(e);
         }
     }
-    public static JsonObject batchConfigDetails(String bucketName,String manifestFile) throws IOException {
-        AmazonS3 s3Client = new AmazonS3Client(new EnvironmentVariableCredentialsProvider());
 
-        S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, manifestFile));
-
-
-        String data = displayTextInputStream(fullObject.getObjectContent());
-        //System.out.println(data);
-        JsonObject jsonObject = convertingToJsonObject(data);
-        //ystem.out.println(jsonObject.get(query));
-        //return jsonObject.get(query);
-        return jsonObject;
-
-    }
     public static JsonObject convertingToJsonObject(String jsonFilePath) {
         try {
             JsonObject json_object = new JsonParser().parse(jsonFilePath).getAsJsonObject();
@@ -68,7 +58,6 @@ public class ManifestFileParser {
     }
 
 
-
     public static ManifestResponse getManifestResponse(JsonObject jsonObject) {
         ManifestResponse config = new ManifestResponse();
         config.setComponent(jsonObject.get("component").getAsString());
@@ -89,6 +78,21 @@ public class ManifestFileParser {
         config.setBatchObjects((jsonObject.get("batchObjects").getAsJsonArray()));
         config.setClusterName(jsonObject.getAsJsonObject("emrParameters").get("clusterName").getAsString());
         return config;
+    }
+
+    public static JsonObject getManifestDetails(String bucketName, String manifestFile) {
+        S3Object fullObject = amazons3Client.getObject(new GetObjectRequest(bucketName, manifestFile));
+        String data = null;
+        try {
+            data = displayTextInputStream(fullObject.getObjectContent());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //System.out.println(data);
+        JsonObject jsonObject = convertingToJsonObject(data);
+        //ystem.out.println(jsonObject.get(query));
+        //return jsonObject.get(query);
+        return jsonObject;
     }
 }
 

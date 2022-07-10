@@ -73,7 +73,7 @@ public class TC_BC_15 {
         ArrayList<String> objectNames = S3FileTransferHandler.GettingObjectsNames(DEST_URI);
         ArrayList<String> batchObjs =new ArrayList<>();
         for(String str: GeneratedBatches){
-            JsonObject jsonObject= ManifestFileParser.batchConfigDetails(s3Bucket,str);
+            JsonObject jsonObject= ManifestFileParser.getManifestDetails(s3Bucket, str);
             JsonArray batchObjects=(jsonObject.get("batchObjects").getAsJsonArray());
                 for(JsonElement element:batchObjects){
                     batchObjs.add(element.getAsString());

@@ -37,6 +37,11 @@ public class DBEntryVerification {
 
     public static Timestamp getLatestBatchCreationTime(Integer pilot_id, String component) {
         Timestamp batch_creation_time = batchJDBCTemplate.getLatestBatchCreationTime(pilot_id, component);
+        if (!batch_creation_time.equals(null)) {
+            System.out.println("Latest Batch Creation Time: " + batch_creation_time);
+        } else {
+            System.out.println("No batches found in the batch_details table with pilot = " + pilot_id + " and component = " + component);
+        }
         return batch_creation_time;
     }
 

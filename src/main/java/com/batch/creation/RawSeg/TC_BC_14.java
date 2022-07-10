@@ -36,7 +36,7 @@ public class TC_BC_14 {
         String manifest_prefix = bc.getPrefix();
         List<String> GeneratedBatches= BatchCountValidator.getBatchManifestFiles(pilotId, component, s3Bucket, manifest_prefix);
         for(String str: GeneratedBatches){
-            JsonObject jsonObject= ManifestFileParser.batchConfigDetails(s3Bucket,str);
+            JsonObject jsonObject= ManifestFileParser.getManifestDetails(s3Bucket, str);
             JsonArray batchObjects = jsonObject.get("batchObjects").getAsJsonArray();
             for(JsonElement arrayValues:batchObjects){
                 String value = arrayValues.getAsString();
