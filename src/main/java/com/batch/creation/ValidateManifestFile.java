@@ -21,6 +21,8 @@ public class ValidateManifestFile {
         int issueCount = 0;
 
         //JsonObject mObj = ManifestFileParser.getManifestFile(manifestObject);
+
+        System.out.println("Validating Manifest file  -> " + manifestObject);
         JsonObject mObj = ManifestFileParser.getManifestDetails(s3Bucket, manifestObject);
         ManifestResponse mfResponse = ManifestFileParser.getManifestResponse(mObj);
 
@@ -31,9 +33,9 @@ public class ValidateManifestFile {
         Boolean is_BatchCreationType_Available = mObj.has("batchCreationType");
         Boolean is_latestObjectModifiedTime_Available = mObj.has("latestObjectModifiedTime");
         Boolean is_latestObjectKey_Available = mObj.has("latestObjectKey");
-        Boolean is_emr_params_Available = mObj.has("emr_params");
+        Boolean is_emr_params_Available = mObj.has("emrParameters");
         Boolean is_stepConfigs_Available = mObj.has("stepConfigs");
-        Boolean is_scheduling_Available = mObj.has("scheduling");
+        Boolean is_scheduling_Available = mObj.has("batchSchedulingConfig");
 
         if (is_BatchObjects_Available && is_BatchSizeInMb_Available && is_Batch_Id_Available && is_Batch_Id_Available && is_BatchCreationTime_Available && is_BatchCreationType_Available && is_latestObjectModifiedTime_Available && is_latestObjectKey_Available && is_emr_params_Available && is_stepConfigs_Available && is_scheduling_Available) {
             Reporter.log("All keys are available in the Manifest file " + manifestObject, true);
@@ -66,7 +68,7 @@ public class ValidateManifestFile {
             Reporter.log("Batch Steps are invalid or missing in the file " + manifestObject, true);
         }
         if (!is_scheduling_Available) {
-            Reporter.log("Batch com.batch.scheduling is invalid or missing in the file " + manifestObject, true);
+            Reporter.log("batchSchedulingConfig is invalid or missing in the file " + manifestObject, true);
         }
         if (!is_BatchObjects_Available) {
             Reporter.log("Batch Objects are missing in the file " + manifestObject, true);
@@ -80,35 +82,40 @@ public class ValidateManifestFile {
         if (!(mfResponse.getPilotId() == InputConfigFile.getPilotId())) {
             issueCount++;
         }
-        if (!(mfResponse.getComponent() == InputConfigFile.getComponent())) {
+        if (!mfResponse.getComponent().equals(InputConfigFile.getComponent())) {
             issueCount++;
+
         }
         if (mfResponse.getbatchSizeInBytes() >= InputConfigFile.getDataSizeInBytes()) {
-            if (!ManifestResponse.getbatchCreationType().equals("SIZE_BASED")) issueCount++;
+            if (!mfResponse.getbatchCreationType().equals("SIZE_BASED")) issueCount++;
         }
 
         String value = mfResponse.getPilotId() + "-" + mfResponse.getComponent() + "-" + mfResponse.getbatchId();
-        if (value.equals(mfResponse.getClusterName())) {
+        if (!value.equals(mfResponse.getClusterName())) {
             issueCount++;
         }
 
-        if ((mfResponse.getbatchSizeInBytes()).equals(BatchCountValidator.SizeOfObjects(mfResponse.getBucket(), ManifestResponse.getBatchObjects()))) {
+        if (!(mfResponse.getbatchSizeInBytes()).equals(BatchCountValidator.SizeOfObjects(mfResponse.getBucket(), ManifestResponse.getBatchObjects()))) {
             issueCount++;
         }
-        if (mfResponse.getDatasetType().equals(InputConfigFile.getDatasetType())) {
+        if (!mfResponse.getDatasetType().equals(InputConfigFile.getDatasetType())) {
             issueCount++;
         }
         if (!mfResponse.isSkipSucceededTasksOnRetry() == InputConfigFile.isSkipSucceededTasksOnRetry()) {
             issueCount++;
+
         }
         if (!mfResponse.isNextBatchDependentOnPrev() == InputConfigFile.isNextBatchDependentOnPrev()) {
             issueCount++;
+
         }
         if (!(mfResponse.getParallelBatchesIfIndependent() == InputConfigFile.getParallelBatchesIfIndependent())) {
             issueCount++;
+
         }
         if (!(mfResponse.getMaxTries() == InputConfigFile.getMaxTries())) {
             issueCount++;
+
         }
 
 

@@ -19,6 +19,8 @@ public class ManifestFileParser {
 
     static AmazonS3Client amazons3Client = new AmazonS3Client();
 
+    private static String s3Bucket = null;
+
     public static String readFileAsString(String file) throws Exception {
         return new String(Files.readAllBytes(Paths.get(file)));
     }
@@ -60,6 +62,7 @@ public class ManifestFileParser {
 
     public static ManifestResponse getManifestResponse(JsonObject jsonObject) {
         ManifestResponse config = new ManifestResponse();
+        config.setBucket(s3Bucket);
         config.setComponent(jsonObject.get("component").getAsString());
         config.setPilotId(jsonObject.get("pilotId").getAsInt());
         config.setWorkerInstanceCount(jsonObject.getAsJsonObject("emrParameters").get("workerInstanceCount").getAsInt());
@@ -69,8 +72,11 @@ public class ManifestFileParser {
         config.setNextBatchDependentOnPrev(jsonObject.getAsJsonObject("batchSchedulingConfig").get("isNextBatchDependentOnPrev").getAsBoolean());
         config.setParallelBatchesIfIndependent(jsonObject.getAsJsonObject("batchSchedulingConfig").get("parallelBatchesIfIndependent").getAsInt());
         config.setMaxTries(jsonObject.getAsJsonObject("batchSchedulingConfig").get("maxTries").getAsInt());
-        config.setComponent(jsonObject.getAsJsonObject("batchSchedulingConfig").get("dagId").getAsString());
+        config.setDagId(jsonObject.getAsJsonObject("batchSchedulingConfig").get("dagId").getAsString());
         //config.setbatchId(String.valueOf(UUID.fromString(jsonObject.get("batchId").getAsString())));
+        config.setDatasetType(jsonObject.get("datasetType").getAsString());
+        config.setCompressionFormat(jsonObject.get("compressionFormat").getAsString());
+        config.setDataFormat(jsonObject.get("dataFormat").getAsString());
         config.setbatchId(jsonObject.get("batchId").getAsString());
         config.setbatchCreationType(jsonObject.get("batchCreationType").getAsString());
         config.setbatchCreationTime(jsonObject.get("batchCreationTime").getAsString());
@@ -78,11 +84,12 @@ public class ManifestFileParser {
         config.setlatestObjectKey(jsonObject.get("latestObjectKey").getAsString());
         config.setBatchObjects((jsonObject.get("batchObjects").getAsJsonArray()));
         config.setClusterName(jsonObject.getAsJsonObject("emrParameters").get("clusterName").getAsString());
-        config.setbatchSizeInBytes(jsonObject.getAsJsonObject("batchSizeInBytes").getAsLong());
+        config.setbatchSizeInBytes(jsonObject.getAsJsonPrimitive("batchSizeInBytes").getAsLong());
         return config;
     }
 
     public static JsonObject getManifestDetails(String bucketName, String manifestFile) {
+        s3Bucket = bucketName;
         S3Object fullObject = amazons3Client.getObject(new GetObjectRequest(bucketName, manifestFile));
         String data = null;
         try {

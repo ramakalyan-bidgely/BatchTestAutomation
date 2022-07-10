@@ -19,7 +19,7 @@ public class ManifestResponse {
 
     private Long batchCreationTime;
 
-    private static String batchCreationType;
+    private String batchCreationType;
 
     private Long latestObjectModifiedTime;
 
@@ -65,7 +65,7 @@ public class ManifestResponse {
         return batchCreationTime;
     }
 
-    public static String getbatchCreationType() {
+    public String getbatchCreationType() {
         return batchCreationType;
     }
 
@@ -225,13 +225,10 @@ public class ManifestResponse {
         this.batchId = batchId;
     }
 
-    public void setbatchCreationType(String asString) {
+    public void setbatchCreationType(String batchCreationType) {
         this.batchCreationType = batchCreationType;
     }
 
-    public String getbatchCreationType(String asString) {
-        return batchCreationType;
-    }
 
     public void setbatchCreationTime(String batchCreationTime) {
         this.batchCreationTime = Long.valueOf(batchCreationTime);

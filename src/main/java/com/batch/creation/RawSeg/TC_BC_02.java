@@ -83,10 +83,7 @@ public class TC_BC_02 {
         System.out.println("Expected number of batches : " + ExpectedNoOfBatches);
 
         BatchExecutionWatcher.bewatch(Integer.parseInt(baseMinute));
-
-
         int SIZE_BASED_CNT = 0;
-
         try {
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
             // now we need to verify the manifest files and check whether the object is present in it or not
