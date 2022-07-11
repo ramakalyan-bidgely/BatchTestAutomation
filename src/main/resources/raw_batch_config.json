@@ -51,7 +51,7 @@
 				],
 				"maxLookUpDays": 1,
 				"dataSizeInBytes": 134217728,
-				"intervalInSec": 3600
+				"intervalInSec": 60
 			},
 			"batchSchedulingConfig": {
 				"skipSucceededTasksOnRetry": true,

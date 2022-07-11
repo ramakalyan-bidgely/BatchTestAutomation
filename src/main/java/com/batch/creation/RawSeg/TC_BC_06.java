@@ -2,75 +2,112 @@ package com.batch.creation.RawSeg;
 
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
+import com.batch.creation.BatchExecutionWatcher;
 import com.batch.creation.DBEntryVerification;
+import com.batch.creation.ValidateManifestFile;
 import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
 import com.google.gson.JsonObject;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import org.testng.Assert;
+import org.testng.Reporter;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
-@Test
+import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
+
+
+@Test()
 public class TC_BC_06 {
+
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
-    private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+    private Integer issueCount = 0;
 
     @Test()
-    void validate() throws IOException {
-        // Multiple Big File Scenario uploading files of size 128mb, after triggering the batch creation service, It
-        // should be able to generate 4 manifest files
+    @Parameters({"batchConfigPath", "baseMinute"})
+    public void validate(String batchConfigPath, Integer baseMinute) throws IOException, InterruptedException {
 
-        //AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/kalyan/ETE_RAW/10061/2022/06/");
-       // String Dir = "D:\\TEST DATA\\TC_BC_06\\DATA_FILES";
-        // a file with proper naming convention is given to transfer files
-        //long DataAccumulatedSize =S3FileTransferHandler.TransferFiles(DEST_URI,Dir);
-        InputConfigParser ConfigParser = new InputConfigParser();
-        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
-        JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
-        // JsonObject value =InputConfigParser.getBatchInputs(batchConfig.get("batchConfigs").getAsString());
-        //System.out.println(value);
+        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);
+
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
 
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
-        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+        Long dataSizeInbytes = bc.getDataSizeInBytes();
 
+        String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
         //Local to S3
         //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
-        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
+        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
 
+        // get latestbatch Creation time
+        System.out.println("Getting latest batch creation time");
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-        System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
-        List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
-          for(String str: GeneratedBatches){
-            JsonObject jsonObject= ManifestFileParser.getManifestDetails(s3Bucket, str);
-            if(jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) issueCount++;
+
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        System.out.println("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize);
+
+
+        //We can pass current automation execution date to prefix as Automation needs to test data from automation only
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(pilotId, component, s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes);
+
+        System.out.println("Expected number of batches : " + ExpectedNoOfBatches);
+
+        //BatchExecutionWatcher.bewatch(baseMinute);
+        Thread.sleep(600000);
+
+        int SIZE_BASED_CNT = 0;
+        try {
+            List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
+            // now we need to verify the manifest files and check whether the object is present in it or not
+            for (String batchManifest : GeneratedBatches) {
+                JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
+                if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) {
+                    SIZE_BASED_CNT++;
+                    System.out.println("SIZE_BASED_CNT = " + SIZE_BASED_CNT);
+                    System.out.println("manifest file: " + batchManifest);
+
+                    //passing batchConfig ,manifest Object details
+                    ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);
+                } else {
+                    issueCount++;
+                }
+                if (issueCount > 0) {
+                    Reporter.log("Generated batches more than expected number of Batches");
+                }
+            }
+            issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
+        } catch (Throwable e) {
+            // print stack trace
+            e.printStackTrace();
         }
 
-
-        Assert.assertEquals(issueCount,4);
-
-
+        Assert.assertEquals(issueCount, 0);
     }
 
 }
+
+

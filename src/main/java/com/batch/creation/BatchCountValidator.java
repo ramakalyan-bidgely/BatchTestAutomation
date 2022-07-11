@@ -61,7 +61,7 @@ public class BatchCountValidator {
         List<S3ObjectSummary> summaries = fileObjs.getObjectSummaries();
         System.out.println("Summaries count :  " + summaries.size());
         List<String> manifestObjs = new ArrayList<String>();
-
+        batch_creation_time = Timestamp.from(batch_creation_time.toInstant().plusSeconds(2));
         for (S3ObjectSummary summary : summaries) {
             if (batch_creation_time.compareTo(summary.getLastModified()) <= 0) {
                 System.out.println("batch Creation Time -> " + batch_creation_time + ",  Manifest Object -> " + summary.getKey());

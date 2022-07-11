@@ -30,9 +30,7 @@ import java.util.logging.Logger;
 import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 
 
-/**
- * @author Rama Kalyan
- */
+
 @Test()
 public class TC_BC_02 {
 
@@ -45,7 +43,7 @@ public class TC_BC_02 {
 
     @Test()
     @Parameters({"batchConfigPath", "baseMinute"})
-    public void validate(String batchConfigPath, String baseMinute) throws IOException, InterruptedException {
+    public void validate(String batchConfigPath, Integer baseMinute) throws IOException, InterruptedException {
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
@@ -82,7 +80,8 @@ public class TC_BC_02 {
 
         System.out.println("Expected number of batches : " + ExpectedNoOfBatches);
 
-        BatchExecutionWatcher.bewatch(Integer.parseInt(baseMinute));
+        BatchExecutionWatcher.bewatch(baseMinute);
+
         int SIZE_BASED_CNT = 0;
         try {
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
@@ -96,8 +95,6 @@ public class TC_BC_02 {
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);
-
-                    issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
                 } else {
                     issueCount++;
                 }
@@ -105,6 +102,7 @@ public class TC_BC_02 {
                     Reporter.log("Generated batches more than expected number of Batches");
                 }
             }
+            issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
         } catch (Throwable e) {
             // print stack trace
             e.printStackTrace();

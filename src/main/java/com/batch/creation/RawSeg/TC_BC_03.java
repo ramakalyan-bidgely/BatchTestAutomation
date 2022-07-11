@@ -43,13 +43,14 @@ public class TC_BC_03 {
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
 
-        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         for (String str : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
+            System.out.println("Validating batch entry in the table -> " + str);
             if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()))) issueCount++;
         }
         Assert.assertEquals(issueCount, 0);

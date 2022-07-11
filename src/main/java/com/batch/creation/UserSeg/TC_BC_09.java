@@ -34,7 +34,7 @@ public class TC_BC_09 {
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String manifest_prefix= bc.getPrefix();
-        //String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batchId";
+        //String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
 
         System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
