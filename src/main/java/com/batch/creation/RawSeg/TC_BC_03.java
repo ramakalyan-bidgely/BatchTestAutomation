@@ -3,11 +3,9 @@ package com.batch.creation.RawSeg;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
-import com.batch.utils.InputConfig;
-import com.batch.utils.InputConfigParser;
-import com.batch.utils.ManifestFileParser;
-import com.batch.utils.S3FileTransferHandler;
+import com.batch.utils.*;
 import com.google.gson.JsonObject;
+import com.sun.org.apache.xpath.internal.operations.VariableSafeAbsRef;
 import org.testng.Assert;
 import org.testng.Reporter;
 import org.testng.annotations.Parameters;
@@ -44,15 +42,18 @@ public class TC_BC_03 {
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
 
-        String manifest_prefix = "s3://bidgely-adhoc-batch-qa/batch-manifests/pilot_id=" + pilotId + "/batch_id";
+        String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
-        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-        Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime,true);
+        //Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+        Timestamp LatestBatchCreationTime = (Timestamp) VariableCollections.map.get("batch_creation_time");
+        Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
+        Reporter.log("Number of Batches generated: " + GeneratedBatches, true);
         for (String str : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
-            Reporter.log("Validating batch entry in the table -> " + str,true);
-            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()),jsonObject.get("batchCreationType").getAsString())) issueCount++;
+            Reporter.log("Validating batch entry in the table -> " + str, true);
+            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()), jsonObject.get("batchCreationType").getAsString()))
+                issueCount++;
         }
         Assert.assertEquals(issueCount, 0);
     }

@@ -57,7 +57,7 @@ public class TC_BC_01 {
         AmazonS3Client amazons3Client = new AmazonS3Client();
         boolean isBucketAvailable = amazons3Client.doesBucketExistV2(s3bucket);
 
-        boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix);
+        boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix + "/");
 
         Long dataSizeInBytes = bc.getDataSizeInBytes();
         boolean isDataSizeConfigured = dataSizeInBytes > 0;

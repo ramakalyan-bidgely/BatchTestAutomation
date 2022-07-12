@@ -94,7 +94,7 @@ public class BatchCountValidator {
     }
 
 
-    public static Integer getExpectedNoOfBatches(Integer pilotId, String component, String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays,Timestamp latest_modified_time) {
+    public static Integer getExpectedNoOfBatches(Integer pilotId, String component, String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays, Timestamp latest_modified_time) {
 
         Integer expectedNumberOfBatches = 0;
         long tempAccumulatedSize = 0L;

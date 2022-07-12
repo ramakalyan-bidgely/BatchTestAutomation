@@ -5,10 +5,7 @@ import com.batch.creation.BatchCountValidator;
 import com.batch.creation.BatchExecutionWatcher;
 import com.batch.creation.DBEntryVerification;
 import com.batch.creation.ValidateManifestFile;
-import com.batch.utils.InputConfig;
-import com.batch.utils.InputConfigParser;
-import com.batch.utils.ManifestFileParser;
-import com.batch.utils.S3FileTransferHandler;
+import com.batch.utils.*;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -72,6 +69,7 @@ public class TC_BC_08 {
         // get latestbatch Creation time
         Reporter.log("Getting latest batch creation time", true);
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+        VariableCollections.map.put("batch_creation_time", LatestBatchCreationTime);
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
         Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);

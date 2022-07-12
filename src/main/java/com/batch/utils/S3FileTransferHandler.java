@@ -145,7 +145,6 @@ public class S3FileTransferHandler {
         ListObjectsV2Result objs = null;
         do {
             objs = amazonS3Client.listObjectsV2(ListObjreq);
-            System.out.println(objs.getObjectSummaries() + "\n");
             summ.addAll(objs.getObjectSummaries());
             ListObjreq.setContinuationToken(objs.getNextContinuationToken());
         } while (objs.isTruncated());
