@@ -43,6 +43,9 @@ public class BatchFrameworkTestAutomation {
         suites.add(SuitePath);
         testng.setTestSuites(suites);
         testng.run();
+
+
+
     }
 
 

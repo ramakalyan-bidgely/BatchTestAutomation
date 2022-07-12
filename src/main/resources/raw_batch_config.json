@@ -49,7 +49,7 @@
 				"operations": [
 					""
 				],
-				"maxLookUpDays": 1,
+				"maxLookUpDays": 5,
 				"dataSizeInBytes": 134217728,
 				"intervalInSec": 60
 			},

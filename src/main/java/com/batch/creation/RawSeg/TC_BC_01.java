@@ -38,21 +38,6 @@ public class TC_BC_01 {
 
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
-//        InputConfigParser ConfigParser = new InputConfigParser();
-//
-//        AmazonS3URI batchInputConfigPath = new AmazonS3URI("s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json");
-//
-//        AmazonS3Client amazonS3Client = new AmazonS3Client();
-//        S3Object batchInputconfig = amazonS3Client.getObject(batchInputConfigPath.getBucket(), batchInputConfigPath.getKey());
-//        String batchConfig = ManifestFileParser.displayTextInputStream(batchInputconfig.getObjectContent());
-//
-//
-//        JsonObject batchConfigs = ManifestFileParser.convertingToJsonObject(batchConfig);
-//
-//        JsonObject bcs = batchConfigs.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
-//
-//        InputConfig bc = InputConfigParser.getInputConfig(bcs);
-
         int pilotId = bc.getPilotId();
         String s3bucket = bc.getBucket();
         String component = bc.getComponent();
@@ -67,12 +52,12 @@ public class TC_BC_01 {
         int maxTries = bc.getMaxTries();
         String dagId = bc.getDagId();
 
-        Reporter.log("Validating Batch Creation components for pilot : {}", pilotId);
+        Reporter.log("Validating Batch Creation components for pilot : " + pilotId, true);
 
         AmazonS3Client amazons3Client = new AmazonS3Client();
         boolean isBucketAvailable = amazons3Client.doesBucketExistV2(s3bucket);
 
-        //boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix);
+        boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix);
 
         Long dataSizeInBytes = bc.getDataSizeInBytes();
         boolean isDataSizeConfigured = dataSizeInBytes > 0;
@@ -95,50 +80,50 @@ public class TC_BC_01 {
         }
         if (!isBucketAvailable) {
             issueCount++;
-            Reporter.log("Bucket is not available, Verify the Input Configuration file : " + s3bucket);
+            Reporter.log("Bucket is not available, Verify the Input Configuration file : " + s3bucket, true);
         }
-        /*if (!isPrefixAvailable) {
+        if (!isPrefixAvailable) {
             issueCount++;
-            Reporter.log("Prefix is not available, Verify the Input Configuration file : " + DataPathPrefix);
-        }*/
+            Reporter.log("Prefix is not available, Verify the Input Configuration file : " + DataPathPrefix, true);
+        }
         if (!isDataSizeConfigured) {
             issueCount++;
-            Reporter.log("Issue in Configured Threshold of DataSizeConfigured : " + dataSizeInBytes);
+            Reporter.log("Issue in Configured Threshold of DataSizeConfigured : " + dataSizeInBytes, true);
         }
         if (!isIntervalInSecConfigured) {
             issueCount++;
-            Reporter.log("Issue in Configured Threshold of IntervalInSec : " + intervalInSec);
+            Reporter.log("Issue in Configured Threshold of IntervalInSec : " + intervalInSec, true);
         }
         if (!isMaxLookupDaysConfigured) {
             issueCount++;
-            Reporter.log("Invalid number of Max Lookup Days : " + maxLookupDays);
+            Reporter.log("Invalid number of Max Lookup Days : " + maxLookupDays, true);
         }
 
         if (!directoryStructure.equals("Firehose")) {
             issueCount++;
-            Reporter.log("Issue in directory Structure : " + directoryStructure);
+            Reporter.log("Issue in directory Structure : " + directoryStructure, true);
 
         }
         /*if (!skipSucceededTasksOnRetry) {
             issueCount++;
 
-            System.out.println(issueCount);
+            Reporter.log(issueCount,true);
 
         } if (!isNextBatchDependentOnPrev) {
             issueCount++;
 
-            System.out.println(issueCount);
+            Reporter.log(issueCount,true);
         }
         if (parallelBatchesIfIndependent != 2) {
             issueCount++;
 
-            System.out.println(issueCount);
+            Reporter.log(issueCount,true);
 
         }
         if (maxTries != 2) {
             issueCount++;
 
-            System.out.println(issueCount);
+            Reporter.log(issueCount,true);
 
         }*/
         if (!compressionFormat.equals("snappy")) {

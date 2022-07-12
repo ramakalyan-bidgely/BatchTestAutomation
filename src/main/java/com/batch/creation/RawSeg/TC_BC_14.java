@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
@@ -43,25 +44,21 @@ public class TC_BC_14 {
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-        System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+        Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         List<String> list = new ArrayList<String>();
 
-        for (String str : GeneratedBatches) {
-            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
+        for (String batchManifest : GeneratedBatches) {
+            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
             JsonArray batchObjects = jsonObject.get("batchObjects").getAsJsonArray();
             for (JsonElement arrayValues : batchObjects) {
                 String value = arrayValues.getAsString();
-                //System.out.println(value);
                 if (!list.contains(value)) {
                     list.add(value);
-                    //System.out.println(value);
                 } else {
                     issueCount++;
-                    System.out.println(value);
+                    Reporter.log(value, true);
                 }
-
-                //System.out.println(str.getAsString().contains("RAW_D_15_S_202201310641_1202"));
             }
         }
         Assert.assertEquals(issueCount, 0);

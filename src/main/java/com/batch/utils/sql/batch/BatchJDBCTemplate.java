@@ -5,7 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -41,13 +43,13 @@ public class BatchJDBCTemplate {
         return batches;
     }
 
-    public Map<String, Object> getLatestObjectDetails(Integer pilotId, String component) {
+    public Timestamp getLatestObjectDetails(Integer pilotId, String component) {
 
-        String SQL = "select latest_modified_key,latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
+        String SQL = "select latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
         try {
             //Timestamp latestModifiedTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
-            Map<String, Object> LatestObjectDetails = jdbcTemplateObject.queryForMap(SQL, new Object[]{pilotId, component});
-            return LatestObjectDetails;
+            Timestamp latest_modified_time = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
+            return latest_modified_time;
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

@@ -22,7 +22,7 @@ public class ValidateManifestFile {
 
         //JsonObject mObj = ManifestFileParser.getManifestFile(manifestObject);
 
-        System.out.println("Validating Manifest file  -> " + manifestObject);
+        Reporter.log("Validating Manifest file  -> " + manifestObject, true);
         JsonObject mObj = ManifestFileParser.getManifestDetails(s3Bucket, manifestObject);
         ManifestResponse mfResponse = ManifestFileParser.getManifestResponse(mObj);
 
@@ -76,8 +76,9 @@ public class ValidateManifestFile {
 
 
         if (is_Batch_Id_Available) {
-            System.out.println("Validating Batch ID");
-            if (!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()))) issueCount++;
+            Reporter.log("Validating Batch ID", true);
+            if (!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()), mObj.get("batchCreationType").getAsString()))
+                issueCount++;
         }
         if (!(mfResponse.getPilotId() == InputConfigFile.getPilotId())) {
             issueCount++;

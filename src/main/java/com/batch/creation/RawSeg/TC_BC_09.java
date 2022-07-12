@@ -9,6 +9,7 @@ import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
@@ -46,12 +47,12 @@ public class TC_BC_09 {
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-        System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+        Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
-        for (String str : GeneratedBatches) {
-            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
-            System.out.println("Validating batch entry in the table -> " + str);
-            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()))) issueCount++;
+        for (String batchManifest : GeneratedBatches) {
+            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
+            Reporter.log("Validating batch entry in the table -> " + batchManifest, true);
+            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()),jsonObject.get("batchCreationType").getAsString())) issueCount++;
         }
         Assert.assertEquals(issueCount, 0);
     }

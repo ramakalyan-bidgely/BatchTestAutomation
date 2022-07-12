@@ -12,16 +12,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.testng.Reporter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -59,14 +57,16 @@ public class BatchCountValidator {
 
         ListObjectsV2Result fileObjs = amazons3Client.listObjectsV2(req);
         List<S3ObjectSummary> summaries = fileObjs.getObjectSummaries();
-        System.out.println("Summaries count :  " + summaries.size());
+        Reporter.log("Summaries count :  " + summaries.size(), true);
         List<String> manifestObjs = new ArrayList<String>();
-        batch_creation_time = Timestamp.from(batch_creation_time.toInstant().plusSeconds(2));
+        if (batch_creation_time != null) {
+            batch_creation_time = Timestamp.from(batch_creation_time.toInstant().plusSeconds(2));
+        }
         for (S3ObjectSummary summary : summaries) {
-            if (batch_creation_time.compareTo(summary.getLastModified()) <= 0) {
-                System.out.println("batch Creation Time -> " + batch_creation_time + ",  Manifest Object -> " + summary.getKey());
-                System.out.println("Manifest Object generated time :  " + summary.getLastModified());
-                System.out.println(summary.getKey() + " : Considered");
+            if ((batch_creation_time != null && batch_creation_time.compareTo(summary.getLastModified()) <= 0)) {
+                Reporter.log("batch Creation Time -> " + batch_creation_time + ",  Manifest Object -> " + summary.getKey(), true);
+                Reporter.log("Manifest Object generated time :  " + summary.getLastModified(), true);
+                Reporter.log(summary.getKey() + " : Considered", true);
                 manifestObjs.add(summary.getKey());
             }
         }
@@ -78,7 +78,7 @@ public class BatchCountValidator {
         ListObjectsV2Result fileObjs = amazons3Client.listObjectsV2(req);
         List<S3ObjectSummary> summaries = fileObjs.getObjectSummaries();
         List<String> manifestObjs = new ArrayList<String>();
-        System.out.println("In BatchCountValidator");
+        Reporter.log("In BatchCountValidator", true);
         for (S3ObjectSummary summary : summaries) {
             manifestObjs.add(summary.getKey());
         }
@@ -94,14 +94,11 @@ public class BatchCountValidator {
     }
 
 
-    public static Integer getExpectedNoOfBatches(Integer pilotId, String component, String s3Bucket, String prefix, Long dataSizeInBytes) {
+    public static Integer getExpectedNoOfBatches(Integer pilotId, String component, String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays,Timestamp latest_modified_time) {
 
         Integer expectedNumberOfBatches = 0;
         long tempAccumulatedSize = 0L;
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
-
-        Map<String, Object> getLatestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
-        Timestamp latest_modified_time = (Timestamp) getLatestObjectDetails.get("latest_modified_time");
 
         ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket).withPrefix(prefix);
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
@@ -114,9 +111,9 @@ public class BatchCountValidator {
 
 
         for (S3ObjectSummary summary : summ) {
-            System.out.println("Objects accumulated : ");
-            if (latest_modified_time.compareTo(summary.getLastModified()) <= 0) {
-                System.out.println(summary.getKey());
+            if (latest_modified_time.compareTo(summary.getLastModified()) < 0) {
+                Reporter.log("Objects accumulated : ", true);
+                Reporter.log(summary.getKey(), true);
                 tempAccumulatedSize += summary.getSize();
                 if (tempAccumulatedSize >= dataSizeInBytes) {
                     expectedNumberOfBatches++;
@@ -132,17 +129,18 @@ public class BatchCountValidator {
         long DataAccumulatedSize = 0L;
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-        Map<String, Object> getLatestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
-        Timestamp latest_modified_time = (Timestamp) getLatestObjectDetails.get("latest_modified_time");
+        Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+        if (latest_modified_time == null) {
+            Date now = new Date();
+            Timestamp ts = new Timestamp(now.getTime());
+            latest_modified_time = ts;
+        }
 
         ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket);
-
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
-
         ListObjectsV2Result objs = null;
         do {
             objs = amazons3Client.listObjectsV2(ListObjreq);
-            System.out.println(objs.getObjectSummaries() + "\n");
             summ.addAll(objs.getObjectSummaries());
             ListObjreq.setContinuationToken(objs.getNextContinuationToken());
         } while (objs.isTruncated());
@@ -150,7 +148,7 @@ public class BatchCountValidator {
 
         for (S3ObjectSummary summary : summ) {
             if (latest_modified_time.compareTo(summary.getLastModified()) <= 0) {
-                System.out.println(summary.getLastModified());
+                Reporter.log(String.valueOf(summary.getLastModified()), true);
                 DataAccumulatedSize += summary.getSize();
             }
         }
@@ -184,10 +182,10 @@ public class BatchCountValidator {
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
         List<BatchDetails> batch_details = batchJDBCTemplate.listBatches(pilotId);
 
-        System.out.println("Size:  ---------> " + batch_details.size());
+        Reporter.log("Size:  ---------> " + batch_details.size(),true);
 
         for (BatchDetails str : batch_details) {
-            System.out.println(str.getLatest_modified_key());
+            Reporter.log(str.getLatest_modified_key(),true);
         }
 
         ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket).withStartAfter(prefix);
@@ -197,7 +195,7 @@ public class BatchCountValidator {
         ListObjectsV2Result objs = null;
         do {
             objs = amazons3Client.listObjectsV2(ListObjreq);
-            System.out.println(objs.getObjectSummaries() + "\n");
+            Reporter.log(objs.getObjectSummaries() + "\n",true);
             summ.addAll(objs.getObjectSummaries());
             ListObjreq.setContinuationToken(objs.getNextContinuationToken());
         } while (objs.isTruncated());
@@ -205,11 +203,11 @@ public class BatchCountValidator {
 
         for (S3ObjectSummary summary : summ) {
             if (getLatest_modified_time().compareTo(summary.getLastModified()) >= 0) {
-                System.out.println(summary.getLastModified());
+                Reporter.log(summary.getLastModified(),true);
                 DataAccumulatedSize += summary.getSize();
             }
         }
-        System.out.println("DataAccumulated Size :  " + DataAccumulatedSize);
+        Reporter.log("DataAccumulated Size :  " + DataAccumulatedSize,true);
         return DataAccumulatedSize;
     }
 */

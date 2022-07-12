@@ -12,12 +12,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,45 +34,56 @@ public class TC_BC_04 {
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
     @Test()
-    @Parameters({"batchConfigPath", "baseMinute"})
-    void validate(String batchConfigPath, Integer baseMinute) throws IOException, InterruptedException {
+    @Parameters({"batchConfigPath", "triggerPoint"})
+    void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
         int pilotId = bc.getPilotId();
+
+        String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
+        String dataSetType = bc.getDatasetType();
+
+
+        Long dataSizeInbytes = bc.getDataSizeInBytes();
+
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
-        //Local to S3
-        //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName();
-        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName();
+        String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
-        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+        Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
 
-        //BatchExecutionWatcher.bewatch(baseMinute);
+        long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
+
+
         Thread.sleep(600000);
 
-        String DataSetKeyWord = "RAW";
 
-        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-        System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+        String ObjectNameKeyword = "RAW";
+
+
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         // now we need to verify the manifest files and check whether the object is present or not
         for (String str : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
             JsonArray batchObjects = (jsonObject.get("batchObjects").getAsJsonArray());
             for (JsonElement element : batchObjects) {
-                if (!element.getAsString().contains(DataSetKeyWord)) {
+                if (!element.getAsString().contains(ObjectNameKeyword)) {
                     issueCount++;
-                    System.out.println("Object name does not contain specified keyword -> " + DataSetKeyWord);
+                    Reporter.log("Object name does not contain specified keyword -> " + ObjectNameKeyword, true);
+                } else {
+                    Reporter.log("Object -> " + element + "contain keyword -> " + ObjectNameKeyword, true);
                 }
             }
         }

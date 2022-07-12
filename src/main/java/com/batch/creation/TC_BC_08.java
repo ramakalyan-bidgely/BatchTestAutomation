@@ -93,7 +93,7 @@ public class TC_BC_08 {
         }
 
         if (GeneratedBatches.size() >= ExpectedNoOfBatches) {
-            System.out.println("Generated Batches : " + GeneratedBatches.size());
+            Reporter.log("Generated Batches : " + GeneratedBatches.size(),true);
         } else {
             issueCount++;
         }

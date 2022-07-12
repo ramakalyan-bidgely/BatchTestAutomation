@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.testng.Reporter;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,62 +26,39 @@ public class DBEntryVerification {
 
     public static BatchJDBCTemplate batchJDBCTemplate = (BatchJDBCTemplate) context.getBean("batchjdbcTemplate");
 
-    public static Boolean validate(UUID batchId) {
+    public static Boolean validate(UUID batchId, String batch_creation_type) {
         if (batchId.version() == 4) {
             List<BatchDetails> BatchIdEntry = batchJDBCTemplate.getBatch(String.valueOf(batchId));
-            System.out.println("Batch ID is valid and available : " + BatchIdEntry.size());
+            Reporter.log("Batch ID is valid and available : " + BatchIdEntry.size(), true);
+            if (BatchIdEntry.get(0).getBatch_creation_type().equals(batch_creation_type)) {
+                Reporter.log("Batch Creation Type matched", true);
+            } else {
+                Reporter.log("Mismatch in Batch creation type for this batch", true);
+            }
+
+
             return (BatchIdEntry.size() > 0);
         } else {
-            Reporter.log("BatchID is Invalid");
+            Reporter.log("BatchID is Invalid", true);
             return false;
         }
+
+
     }
 
     public static Timestamp getLatestBatchCreationTime(Integer pilot_id, String component) {
         Timestamp batch_creation_time = batchJDBCTemplate.getLatestBatchCreationTime(pilot_id, component);
-        if (!batch_creation_time.equals(null)) {
-            System.out.println("Latest Batch Creation Time: " + batch_creation_time);
+        if (batch_creation_time != null) {
+            Reporter.log("Latest Batch Creation Time: " + batch_creation_time, true);
         } else {
-            System.out.println("No batches found in the batch_details table with pilot = " + pilot_id + " and component = " + component);
+            Date now = new Date();
+            Timestamp ts = new Timestamp(now.getTime());
+            batch_creation_time = ts;
+            Reporter.log(batch_creation_time + " : No batches found in the batch_details table with pilot = " + pilot_id + " and component = " + component + ", Considering it as a first run !", true);
+
         }
         return batch_creation_time;
     }
 
 
-
-  /*
-    Test_CaseID		  :	TC_BC_07
-    Priority		    :	P0
-    Area				    :	Batch Creation
-    TestCaseName		:	Batch_DBEntry_Verification
-    TestCaseSummary	:	Verify unique batch id generated in the manifest file followed by its entry in the database table (entry of that batch with status CREATED as default value)
-    Steps			      :	1. Read/Parse successfully generated manifest file and get batchId value from it
-                      2. check the uuid is valid or not  (ex : version 4)
-                      3. Check the batch id entry in the db tables batch_details table
-    ExpectedResult	:	A valid uuid (version 4) must be generated in batch manifest file with its entry in the mysql db tables batch_run_history, batchGlobalStatus without failure in the updation of db after generation of manifest file
-
-   */
-
-
-
-
-  /*val logger: Logger = LoggerFactory.getLogger(getClass.getSimpleName)
-
-  def validate(batchId: UUID): Unit = {
-
-    if (batchId.version() == 4) {
-      Reporter.log("Batch UUID is valid with version 4")
-
-      val QryStr = s"select status from batch.batchGlobalStatus where batchId='$batchId'"
-      //Check Status of batch for batchId
-      val Batch_Status = BatchInfoDB.getBatchStatus(QryStr, batchId.toString)
-      if (Batch_Status == "CREATED") {
-        Reporter.log("Batch created successfully for batchId -> {} - Test case Passed !", batchId)
-      } else {
-        Reporter.log("Batch entry is missing in the database for batchId -> {} - Test case Failed !", batchId)
-      }
-    } else {
-      logger.error("Batch UUID is not a valid UUID - Test case Failed !")
-    }
-  }*/
 }

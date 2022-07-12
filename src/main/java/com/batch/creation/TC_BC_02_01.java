@@ -55,7 +55,7 @@ public class TC_BC_02_01 {
 
     @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
     public void validate(JsonObject batchConfig) throws InterruptedException {
-        System.out.println("Helloworld");
+        Reporter.log("Helloworld",true);
         InputConfigParser ConfigParser = new InputConfigParser();
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
         int pilotId = bc.getPilotId();
@@ -89,7 +89,7 @@ public class TC_BC_02_01 {
         }
 
         if (GeneratedBatches.size() >= ExpectedNoOfBatches) {
-            System.out.println("Generated Batches : " + GeneratedBatches.size());
+            Reporter.log("Generated Batches : " + GeneratedBatches.size(),true);
         } else {
             issueCount++;
         }

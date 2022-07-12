@@ -1,6 +1,8 @@
 package com.batch.creation;
 
 
+import org.testng.Reporter;
+
 import java.util.Calendar;
 
 import static java.lang.Math.floorDiv;
@@ -8,16 +10,17 @@ import static java.lang.Math.floorDiv;
 public class BatchExecutionWatcher {
 
 
-    public static void bewatch(int baseMinute) {
+    public static void bewatch(int triggerPointVal) {
         boolean waitFlag = true;
         Calendar dt = Calendar.getInstance();
 
         while (waitFlag) {
             Calendar date = Calendar.getInstance();
             int CalMinute = date.get(Calendar.MINUTE);
-            //int ElapseMinute = (floorDiv(CalMinute, 10) + 10 + baseMinute) - CalMinute;
-            System.out.println(date.getTime() + " -> waiting for Batch Creation Service to complete !");
-            if (CalMinute % 10 == baseMinute) {
+            int CalSecond = date.get(Calendar.SECOND);
+            //int ElapseMinute = (floorDiv(CalMinute, 10) + 10 + triggerPoint) - CalMinute;
+            Reporter.log(date.getTime() + " -> waiting for Batch Creation Service to complete !", true);
+            if (CalMinute % 10 == triggerPointVal) {
                 waitFlag = false;
                 continue;
             } else {

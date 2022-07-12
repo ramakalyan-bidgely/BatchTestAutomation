@@ -8,10 +8,12 @@ import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
+import com.batch.utils.sql.batch.BatchJDBCTemplate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
@@ -45,14 +47,17 @@ public class TC_BC_21 {
 
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
         // JsonObject value =InputConfigParser.getBatchInputs(batchConfig.get("batchConfigs").getAsString());
-        //System.out.println(value);
+        //Reporter.log(value,true);
 
-
+        String s3Prefix = "s3://";
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
+        String dataSetType = bc.getDatasetType();
         Long dataSizeInbytes = bc.getDataSizeInBytes();
+        Integer maxLookUpDays = bc.getMaxLookUpDays();
+
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
         ArrayList<String> list = new ArrayList<String>();
         list.add("DATA_FILES/");
@@ -61,20 +66,28 @@ public class TC_BC_21 {
         for (String name : list) {
             Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
             CharSequence fileName = null;
+            BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-            String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName() + "/";
-            //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+            Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+            if (latest_modified_time == null) {
+                Date now = new Date();
+                Timestamp ts = new Timestamp(now.getTime());
+                latest_modified_time = ts;
+            }
+
+            String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-            String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName() + "/" + name;
+            String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
             AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
             //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-            Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(pilotId, component, s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes);
+            Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(pilotId, component, s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time);
 
-            System.out.println("Expected number of batches : " + ExpectedNoOfBatches);
+            Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
             Thread.sleep(600000);
             int TIME_BASED_CNT = 0;
 
-            //System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+            //Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime,true);
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
             ArrayList<String> objectNames = S3FileTransferHandler.GettingObjectsNames(DEST_URI);
             ArrayList<String> batchObjs = new ArrayList<>();
@@ -82,8 +95,8 @@ public class TC_BC_21 {
                 JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
                 if (jsonObject.get("batchCreationType").getAsString().equals("TIME_BASED")) {
                     TIME_BASED_CNT++;
-                    System.out.println("TIME_BASED_CNT = " + TIME_BASED_CNT);
-                    System.out.println("manifest file: " + batchManifest);
+                    Reporter.log("TIME_BASED_CNT = " + TIME_BASED_CNT, true);
+                    Reporter.log("manifest file: " + batchManifest, true);
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);

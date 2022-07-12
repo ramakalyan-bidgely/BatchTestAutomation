@@ -16,6 +16,7 @@ import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.TransferProgress;
+import org.testng.Reporter;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -183,6 +184,7 @@ public class S3FileTransferHandler {
                 List<String> ObjName = Arrays.asList(summary.getKey().split("/"));
                 CopyObjectRequest copyObjRequest = new CopyObjectRequest(summary.getBucketName(), summary.getKey(), DEST_URI.getBucket(), DEST_URI.getKey() + "/" + ObjName.get(ObjName.size() - 1));
                 amazonS3Client.copyObject(copyObjRequest);
+                Reporter.log(ObjName + " transferred", true);
                 DataAccumulatedSize += summary.getSize();
             }
 

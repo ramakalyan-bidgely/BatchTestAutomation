@@ -12,12 +12,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,66 +34,60 @@ public class TC_BC_05 {
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
     @Test()
-    @Parameters({"batchConfigPath", "baseMinute"})
-    void validate(String batchConfigPath, Integer baseMinute) throws IOException, InterruptedException {
-        //AmazonS3URI DEST_URI = new AmazonS3URI("s3://bidgely-adhoc-batch-qa/kalyan/ETE_RAW/10061/2022/06/");
-     /*   String Dir = "D:\\TEST DATA\\TC_BC_04\\DATA_FILES";
-        String[] data = Dir.split("\\\\");
-        String fileName = data[data.length - 1];
+    @Parameters({"batchConfigPath", "triggerPoint"})
+    void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
 
-
-        // a file with proper naming convention is given to transfer files
-        //long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI, Dir);
-        int issueCount = 0;
-        InputConfigParser ConfigParser = new InputConfigParser();
-        String jsonFilePath = "s3://bidgely-adhoc-dev/10061/rawingestion/raw_batch_config.json";
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(jsonFilePath);
-        JsonObject batchconfigs = batchConfig.get("batchConfigs").getAsJsonArray().get(0).getAsJsonObject();
-
-        InputConfig bc = InputConfigParser.getInputConfig(batchconfigs);*/
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
         int pilotId = bc.getPilotId();
+
+        String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
+        String dataSetType = bc.getDatasetType();
+
+
+        Long dataSizeInbytes = bc.getDataSizeInBytes();
+
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
-        //Local to S3
-        //String Dir = "D:\\TEST DATA\\TC_BC_02\\DATA_FILES";
-        String DEST = "s3://bidgely-adhoc-batch-qa/TestAutomation/" + pilotId + "/" + dt + "/" + getClass().getSimpleName();
-        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = "s3://bidgely-adhoc-batch-qa/TestData/" + pilotId + "/" + getClass().getSimpleName();
+        String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
+        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+        Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
 
         long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+        Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
 
-        //BatchExecutionWatcher.bewatch(baseMinute);
         Thread.sleep(600000);
 
-        String DataSetKeyWord = "RAW";
+        String ObjectNameKeyword = "RAW";
 
-        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-        System.out.println("Latest Batch Creation Time: " + LatestBatchCreationTime);
+
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         // now we need to verify the manifest files and check whether the object is present or not
         for (String str : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
             JsonArray batchObjects = (jsonObject.get("batchObjects").getAsJsonArray());
             for (JsonElement element : batchObjects) {
-                if (!element.getAsString().contains(DataSetKeyWord)) {
+                if (!element.getAsString().contains(ObjectNameKeyword)) {
                     issueCount++;
-                    System.out.println("Object name does not contain specified keyword -> " + DataSetKeyWord);
+                    Reporter.log("Object name does not contain specified keyword -> " + ObjectNameKeyword, true);
+                } else {
+                    Reporter.log("Object -> " + element + "contain keyword -> " + ObjectNameKeyword, true);
                 }
             }
         }
 
 
-        Assert.assertEquals(issueCount, 0);
+        Assert.assertEquals(issueCount, 1);
 
     }
 
