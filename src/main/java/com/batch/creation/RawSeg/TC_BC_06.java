@@ -37,6 +37,9 @@ public class TC_BC_06 {
     @Test()
     @Parameters({"batchConfigPath", "triggerPoint"})
     public void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
+
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
@@ -47,7 +50,7 @@ public class TC_BC_06 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix();
+        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
         Integer maxLookUpDays = bc.getMaxLookUpDays();
 
@@ -81,7 +84,7 @@ public class TC_BC_06 {
 
 
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(pilotId, component, s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time,LatestBatchCreationTime,intervalInSec);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
@@ -92,7 +95,7 @@ public class TC_BC_06 {
         try {
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
             // now we need to verify the manifest files and check whether the object is present in it or not
-            ArrayList<String> objectNames = S3FileTransferHandler.GettingObjectsNames(DEST_URI);
+            ArrayList<String> objectNames = S3FileTransferHandler.GetObjectKeys(DEST_URI);
             ArrayList<String> batchObjs = new ArrayList<>();
             for (String batchManifest : GeneratedBatches) {
                 JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
@@ -116,6 +119,8 @@ public class TC_BC_06 {
             }
             issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
             for (String value : objectNames) {
+                System.out.println("Value: " + value);
+                System.out.println("batch Objs: ->" + batchObjs);
                 if (!batchObjs.contains(value)) issueCount++;
             }
         } catch (Throwable e) {
@@ -124,6 +129,7 @@ public class TC_BC_06 {
         }
 
         Assert.assertEquals(issueCount, 0);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }
 
 }

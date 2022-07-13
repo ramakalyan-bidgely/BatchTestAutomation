@@ -18,6 +18,7 @@ import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.logging.Logger;
 
 import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
@@ -33,6 +34,9 @@ public class TC_BC_01 {
     @Test
     @Parameters("batchConfigPath")
     public void validate(String batchConfigPath) throws IOException {
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
+
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
@@ -57,7 +61,7 @@ public class TC_BC_01 {
         AmazonS3Client amazons3Client = new AmazonS3Client();
         boolean isBucketAvailable = amazons3Client.doesBucketExistV2(s3bucket);
 
-        boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix + "/");
+        //boolean isPrefixAvailable = amazons3Client.doesBucketExistV2(s3bucket + "/" + DataPathPrefix + "/");
 
         Long dataSizeInBytes = bc.getDataSizeInBytes();
         boolean isDataSizeConfigured = dataSizeInBytes > 0;
@@ -82,10 +86,10 @@ public class TC_BC_01 {
             issueCount++;
             Reporter.log("Bucket is not available, Verify the Input Configuration file : " + s3bucket, true);
         }
-        if (!isPrefixAvailable) {
-            issueCount++;
-            Reporter.log("Prefix is not available, Verify the Input Configuration file : " + DataPathPrefix, true);
-        }
+//        if (!isPrefixAvailable) {
+//            issueCount++;
+//            Reporter.log("Prefix is not available, Verify the Input Configuration file : " + DataPathPrefix, true);
+//        }
         if (!isDataSizeConfigured) {
             issueCount++;
             Reporter.log("Issue in Configured Threshold of DataSizeConfigured : " + dataSizeInBytes, true);
@@ -104,28 +108,25 @@ public class TC_BC_01 {
             Reporter.log("Issue in directory Structure : " + directoryStructure, true);
 
         }
-        /*if (!skipSucceededTasksOnRetry) {
+       /* if (!skipSucceededTasksOnRetry) {
             issueCount++;
 
-            Reporter.log(issueCount,true);
-
-        } if (!isNextBatchDependentOnPrev) {
-            issueCount++;
-
-            Reporter.log(issueCount,true);
-        }
-        if (parallelBatchesIfIndependent != 2) {
-            issueCount++;
-
-            Reporter.log(issueCount,true);
-
-        }
-        if (maxTries != 2) {
-            issueCount++;
-
-            Reporter.log(issueCount,true);
+            Reporter.log(issueCount, true);
 
         }*/
+     /*   if (!isNextBatchDependentOnPrev) {
+            issueCount++;
+            Reporter.log(issueCount, true);
+        }*/
+        if (parallelBatchesIfIndependent <= 0) {
+            issueCount++;
+            Reporter.log("Invalid number of ", true);
+
+        }
+        if (maxTries <= 0) {
+            issueCount++;
+            Reporter.log("Invalid maxTries count has been provided -> " + maxTries, true);
+        }
         if (!compressionFormat.equals("snappy")) {
             issueCount++;
             Reporter.log("Compression format is invalid : " + compressionFormat);
@@ -141,6 +142,7 @@ public class TC_BC_01 {
         }
 
         Assert.assertEquals(issueCount, 0);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }
 }
 

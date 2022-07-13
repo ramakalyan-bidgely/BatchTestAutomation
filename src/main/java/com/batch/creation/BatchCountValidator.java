@@ -94,7 +94,7 @@ public class BatchCountValidator {
     }
 
 
-    public static Integer getExpectedNoOfBatches(Integer pilotId, String component, String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays, Timestamp latest_modified_time) {
+    public static Integer getExpectedNoOfBatches(String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays, Timestamp latest_modified_time, Timestamp batch_creation_time, long intervalInSec) {
 
         Integer expectedNumberOfBatches = 0;
         long tempAccumulatedSize = 0L;
@@ -121,6 +121,11 @@ public class BatchCountValidator {
                 }
             }
         }
+        if (expectedNumberOfBatches == 0) {
+            Reporter.log("Configured Sized Data " + dataSizeInBytes + " hasn't been accumulated. Hence one TIME_BASED manifest batch may get generated !", true);
+            expectedNumberOfBatches = 1;
+        }
+
         return expectedNumberOfBatches;
     }
 

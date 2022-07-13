@@ -138,7 +138,7 @@ public class S3FileTransferHandler {
 
     }
 
-    public static ArrayList<String> GettingObjectsNames(AmazonS3URI SRC_URI) {
+    public static ArrayList<String> GetObjectKeys(AmazonS3URI SRC_URI) {
         com.amazonaws.services.s3.model.ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(SRC_URI.getBucket()).withPrefix(SRC_URI.getKey());
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
         ArrayList<String> keys = new ArrayList<>();
@@ -158,7 +158,7 @@ public class S3FileTransferHandler {
             String[] values = keys.get(i).split("/");
             objects.add(values[values.length - 1]);
         }
-        return objects;
+        return keys;
 
     }
 

@@ -39,6 +39,9 @@ public class TC_BC_23 {
     public void validate(String batchConfigPath) throws IOException, InterruptedException {
 
 
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
+
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
@@ -48,7 +51,7 @@ public class TC_BC_23 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix();
+        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
 
         Integer maxLookUpDays = bc.getMaxLookUpDays();
@@ -85,7 +88,7 @@ public class TC_BC_23 {
         Thread.sleep(10000);
 
         List<String> LookUpDirectories = new ArrayList<>();
-        Calendar c = Calendar.getInstance();
+
         c.setTime(new Date()); // Using today's date
 
 
@@ -103,7 +106,7 @@ public class TC_BC_23 {
             c.add(Calendar.DATE, -1); // Adding 5 days
         }
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-       /* Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(pilotId, component, s3Bucket, BucketPrefix, dataSizeInbytes, maxLookUpDays,latest_modified_time);
+       /* Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix, dataSizeInbytes, maxLookUpDays,latest_modified_time);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);*/
 
@@ -135,6 +138,7 @@ public class TC_BC_23 {
         }
 
         Assert.assertEquals(issueCount, 0);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }
 
 

@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,8 @@ public class TC_BC_11 {
     @Parameters("batchConfigPath")
     public void validate(String batchConfigPath) throws IOException, InterruptedException {
 
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
@@ -39,7 +42,7 @@ public class TC_BC_11 {
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix();
+        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
         //Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
@@ -52,5 +55,6 @@ public class TC_BC_11 {
             if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()),jsonObject.get("batchCreationType").getAsString())) issueCount++;
         }
         Assert.assertEquals(issueCount, 0);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }
 }

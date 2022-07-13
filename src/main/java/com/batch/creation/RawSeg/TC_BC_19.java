@@ -4,10 +4,7 @@ import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.creation.ValidateManifestFile;
-import com.batch.utils.InputConfig;
-import com.batch.utils.InputConfigParser;
-import com.batch.utils.ManifestFileParser;
-import com.batch.utils.S3FileTransferHandler;
+import com.batch.utils.*;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -21,6 +18,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -42,6 +40,10 @@ public class TC_BC_19 {
         String fileName= S3FileTransferHandler.ListofFiles(Dir).get(0).toString();
         // a file with proper naming convention is given to transfer files
         long DataAccumulatedSize = S3FileTransferHandler.TransferFiles(DEST_URI,Dir);*/
+
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
+
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
 
@@ -55,6 +57,7 @@ public class TC_BC_19 {
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
+        long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
         Long dataSizeInbytes = bc.getDataSizeInBytes();
         Integer maxLookUpDays = bc.getMaxLookUpDays();
@@ -66,6 +69,7 @@ public class TC_BC_19 {
 
         for (String name : list) {
             Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
+            VariableCollections.map.put("batch_creation_time", LatestBatchCreationTime);
             BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
             Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
@@ -79,10 +83,14 @@ public class TC_BC_19 {
             String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-            String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
+            String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/" + name;
             AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
+
+            long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
+            Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
+
             //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-            Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(pilotId, component, s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time);
+            Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
 
             Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
             Thread.sleep(600000);
@@ -90,7 +98,7 @@ public class TC_BC_19 {
 
             //Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime,true);
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
-            ArrayList<String> objectNames = S3FileTransferHandler.GettingObjectsNames(DEST_URI);
+            ArrayList<String> objectNames = S3FileTransferHandler.GetObjectKeys(DEST_URI);
             ArrayList<String> batchObjs = new ArrayList<>();
             for (String batchManifest : GeneratedBatches) {
                 JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
@@ -115,5 +123,6 @@ public class TC_BC_19 {
 
 
         Assert.assertEquals(issueCount, 0);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }
 }

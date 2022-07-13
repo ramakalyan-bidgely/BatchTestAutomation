@@ -37,6 +37,8 @@ public class TC_BC_05 {
     @Parameters({"batchConfigPath", "triggerPoint"})
     void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
 
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
@@ -47,7 +49,7 @@ public class TC_BC_05 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix();
+        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
 
 
@@ -68,8 +70,23 @@ public class TC_BC_05 {
 
         Thread.sleep(600000);
 
-        String ObjectNameKeyword = "RAW";
-
+        String ObjectNameKeyword = null;
+        switch (dataSetType) {
+            case "user_enrollment":
+                ObjectNameKeyword = "USERENROLL";
+                break;
+            case "meter_enrollment":
+                ObjectNameKeyword = "METERENROLL";
+                break;
+            case "raw_consumption_data":
+                ObjectNameKeyword = "RAW";
+                break;
+            case "invoice":
+                ObjectNameKeyword = "INVOICE";
+                break;
+            default:
+                Reporter.log("Invalid Object Name Keyword", true);
+        }
 
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         // now we need to verify the manifest files and check whether the object is present or not
@@ -88,6 +105,7 @@ public class TC_BC_05 {
 
 
         Assert.assertEquals(issueCount, 1);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
 
     }
 

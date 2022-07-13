@@ -5,7 +5,7 @@ import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.utils.*;
 import com.google.gson.JsonObject;
-import com.sun.org.apache.xpath.internal.operations.VariableSafeAbsRef;
+
 import org.testng.Assert;
 import org.testng.Reporter;
 import org.testng.annotations.Parameters;
@@ -14,6 +14,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,8 @@ public class TC_BC_03 {
     @Parameters("batchConfigPath")
     public void validate(String batchConfigPath) throws IOException, InterruptedException {
 
+        Calendar c = Calendar.getInstance();
+        Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
@@ -41,6 +44,7 @@ public class TC_BC_03 {
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
+        long intervalInSec = bc.getIntervalInSec();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
@@ -56,5 +60,6 @@ public class TC_BC_03 {
                 issueCount++;
         }
         Assert.assertEquals(issueCount, 0);
+        Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }
 }

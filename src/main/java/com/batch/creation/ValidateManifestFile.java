@@ -74,12 +74,12 @@ public class ValidateManifestFile {
             Reporter.log("Batch Objects are missing in the file " + manifestObject, true);
         }
 
-
-        if (is_Batch_Id_Available) {
+        //below one is getting validated as a seperate case
+       /* if (is_Batch_Id_Available) {
             Reporter.log("Validating Batch ID", true);
             if (!DBEntryVerification.validate(UUID.fromString(mObj.get("batchId").getAsString()), mObj.get("batchCreationType").getAsString()))
                 issueCount++;
-        }
+        }*/
         if (!(mfResponse.getPilotId() == InputConfigFile.getPilotId())) {
             issueCount++;
         }
