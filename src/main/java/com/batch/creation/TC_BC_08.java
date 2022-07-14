@@ -1,4 +1,4 @@
-package com.batch.creation.RawSeg;
+package com.batch.creation;
 
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
@@ -28,15 +28,18 @@ import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 
 
 @Test()
-public class TC_BC_06 {
+public class TC_BC_08 {
+
+    //have to prepare data size of 300mb
+
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     private Integer issueCount = 0;
 
     @Test()
-    @Parameters({"batchConfigPath", "triggerPoint"})
-    public void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
+    @Parameters({"batchConfigPath"})
+    public void validate(String batchConfigPath) throws IOException, InterruptedException {
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
@@ -50,7 +53,9 @@ public class TC_BC_06 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
+        long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
         Integer maxLookUpDays = bc.getMaxLookUpDays();
 
@@ -84,7 +89,7 @@ public class TC_BC_06 {
 
 
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time,LatestBatchCreationTime,intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
@@ -119,8 +124,6 @@ public class TC_BC_06 {
             }
             issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
             for (String value : objectNames) {
-                System.out.println("Value: " + value);
-                System.out.println("batch Objs: ->" + batchObjs);
                 if (!batchObjs.contains(value)) issueCount++;
             }
         } catch (Throwable e) {

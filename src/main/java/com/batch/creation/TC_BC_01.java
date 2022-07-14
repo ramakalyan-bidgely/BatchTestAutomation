@@ -1,4 +1,4 @@
-package com.batch.creation.RawSeg;
+package com.batch.creation;
 
 
 /**
@@ -108,9 +108,14 @@ public class TC_BC_01 {
             Reporter.log("Issue in directory Structure : " + directoryStructure, true);
 
         }
+
+//        if (skipSucceededTasksOnRetry || !skipSucceededTasksOnRetry) {
+//            issueCount++;
+//            Reporter.log("Invalid value provided for skip Succeeded Tasks On Retry", true);
+//        }
+
        /* if (!skipSucceededTasksOnRetry) {
             issueCount++;
-
             Reporter.log(issueCount, true);
 
         }*/

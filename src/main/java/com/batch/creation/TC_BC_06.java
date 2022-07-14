@@ -1,4 +1,4 @@
-package com.batch.creation.RawSeg;
+package com.batch.creation;
 
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
@@ -28,18 +28,15 @@ import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 
 
 @Test()
-public class TC_BC_02 {
-
-    //have to prepare data size of 300mb
-
+public class TC_BC_06 {
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     private Integer issueCount = 0;
 
     @Test()
-    @Parameters({"batchConfigPath", "triggerPoint"})
-    public void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
+    @Parameters({"batchConfigPath"})
+    public void validate(String batchConfigPath) throws IOException, InterruptedException {
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
@@ -54,7 +51,7 @@ public class TC_BC_02 {
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
-
+        String directoryStructure = bc.getDirectoryStructure();
         long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
         Integer maxLookUpDays = bc.getMaxLookUpDays();
@@ -89,17 +86,17 @@ public class TC_BC_02 {
 
 
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time,LatestBatchCreationTime,intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
-        BatchExecutionWatcher.bewatch(triggerPoint);
+        //BatchExecutionWatcher.bewatch(triggerPoint);
+        Thread.sleep(600000);
 
         int SIZE_BASED_CNT = 0;
         try {
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
             // now we need to verify the manifest files and check whether the object is present in it or not
-            Reporter.log("Number of Batches generated: " + GeneratedBatches, true);
             ArrayList<String> objectNames = S3FileTransferHandler.GetObjectKeys(DEST_URI);
             ArrayList<String> batchObjs = new ArrayList<>();
             for (String batchManifest : GeneratedBatches) {
@@ -124,6 +121,8 @@ public class TC_BC_02 {
             }
             issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
             for (String value : objectNames) {
+                System.out.println("Value: " + value);
+                System.out.println("batch Objs: ->" + batchObjs);
                 if (!batchObjs.contains(value)) issueCount++;
             }
         } catch (Throwable e) {

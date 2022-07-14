@@ -1,4 +1,4 @@
-package com.batch.creation.RawSeg;
+package com.batch.creation;
 
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 
 @Test()
-public class TC_BC_16 {
+public class TC_BC_20 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
@@ -30,18 +30,21 @@ public class TC_BC_16 {
     @Test()
     @Parameters("batchConfigPath")
     public void validate(String batchConfigPath) throws IOException, InterruptedException {
+
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
+
 
         JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
 
-
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
+        long intervalInSec = bc.getIntervalInSec();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
@@ -51,9 +54,11 @@ public class TC_BC_16 {
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         for (String batchManifest : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
-            Reporter.log("Validating batch entry in the table -> " + batchManifest,true);
-            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()),jsonObject.get("batchCreationType").getAsString())) issueCount++;
+            Reporter.log("Validating batch entry in the table -> " + batchManifest, true);
+            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()), jsonObject.get("batchCreationType").getAsString()))
+                issueCount++;
         }
+
         Assert.assertEquals(issueCount, 0);
         Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
     }

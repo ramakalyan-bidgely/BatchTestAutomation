@@ -49,6 +49,8 @@ public class BatchFrameworkTestAutomation {
         String SuitePath = props.getProperty("SuitePath");
         suites.add(SuitePath);
         testng.setTestSuites(suites);
+
+
         testng.run();
 
         Reporter.log("Batch Creation Test Suite Automation Completed at -> " + c.getTime(), true);

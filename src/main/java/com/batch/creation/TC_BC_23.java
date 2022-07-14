@@ -1,4 +1,4 @@
-package com.batch.creation.RawSeg;
+package com.batch.creation;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -51,7 +51,9 @@ public class TC_BC_23 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix(); 
+	          String directoryStructure = bc.getDirectoryStructure(); 
+	          long intervalInSec= bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
 
         Integer maxLookUpDays = bc.getMaxLookUpDays();

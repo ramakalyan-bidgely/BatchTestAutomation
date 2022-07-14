@@ -1,4 +1,4 @@
-package com.batch.creation.RawSeg;
+package com.batch.creation;
 
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
@@ -28,7 +28,7 @@ import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 
 
 @Test()
-public class TC_BC_12 {
+public class TC_BC_10 {
 
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
@@ -36,8 +36,8 @@ public class TC_BC_12 {
     private Integer issueCount = 0;
 
     @Test()
-    @Parameters({"batchConfigPath", "triggerPoint"})
-    public void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
+    @Parameters({"batchConfigPath"})
+    public void validate(String batchConfigPath) throws IOException, InterruptedException {
 
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
@@ -51,21 +51,22 @@ public class TC_BC_12 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
+        long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
         Integer maxLookUpDays = bc.getMaxLookUpDays();
-
 
         Long dataSizeInbytes = bc.getDataSizeInBytes();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
+        dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) : new SimpleDateFormat("yyyy/MM/dd").format(new Date());
         String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
         String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
-
 
         // get latestbatch Creation time
         Reporter.log("Getting latest batch creation time", true);
@@ -85,11 +86,12 @@ public class TC_BC_12 {
 
 
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time,LatestBatchCreationTime,intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
-        BatchExecutionWatcher.bewatch(triggerPoint);
+        //BatchExecutionWatcher.bewatch(triggerPoint);
+        Thread.sleep(600000);
 
         int TIME_BASED_CNT = 0;
         try {
