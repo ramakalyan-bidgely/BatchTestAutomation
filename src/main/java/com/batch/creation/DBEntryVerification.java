@@ -3,6 +3,8 @@ package com.batch.creation;
 
 import com.batch.utils.sql.batch.BatchDetails;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
+import com.google.gson.JsonObject;
+import org.json.JSONObject;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
@@ -26,7 +28,12 @@ public class DBEntryVerification {
 
     public static BatchJDBCTemplate batchJDBCTemplate = (BatchJDBCTemplate) context.getBean("batchjdbcTemplate");
 
-    public static Boolean validate(UUID batchId, String batch_creation_type) {
+    public static Boolean validate(JsonObject manifestObjContent) {
+
+        UUID batchId = UUID.fromString(manifestObjContent.get("batchId").getAsString());
+        String batch_creation_type=manifestObjContent.get("batch_creation_type").getAsString();
+        //Timestamp latest_modified_time=manifestObjContent.getAsTimestamp("");
+
         if (batchId.version() == 4) {
             List<BatchDetails> BatchIdEntry = batchJDBCTemplate.getBatch(String.valueOf(batchId));
             Reporter.log("Batch ID is valid and available : " + BatchIdEntry.size(), true);
@@ -35,15 +42,11 @@ public class DBEntryVerification {
             } else {
                 Reporter.log("Mismatch in Batch creation type for this batch", true);
             }
-
-
             return (BatchIdEntry.size() > 0);
         } else {
             Reporter.log("BatchID is Invalid", true);
             return false;
         }
-
-
     }
 
     public static Timestamp getLatestBatchCreationTime(Integer pilot_id, String component) {

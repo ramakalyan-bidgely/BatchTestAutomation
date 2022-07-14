@@ -63,6 +63,7 @@ public class TC_BC_08 {
         Long dataSizeInbytes = bc.getDataSizeInBytes();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
+        dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) : new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
         String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 

@@ -43,7 +43,8 @@ public class TC_BC_03 {
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); String directoryStructure = bc.getDirectoryStructure();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
         long intervalInSec = bc.getIntervalInSec();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
@@ -53,11 +54,11 @@ public class TC_BC_03 {
         Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         Reporter.log("Number of Batches generated: " + GeneratedBatches, true);
-        for (String str : GeneratedBatches) {
-            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
-            Reporter.log("Validating batch entry in the table -> " + str, true);
-            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()), jsonObject.get("batchCreationType").getAsString()))
-                issueCount++;
+        for (String batchManifest : GeneratedBatches) {
+            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
+            Reporter.log("Validating batch entry in the table -> " + batchManifest, true);
+            if (!DBEntryVerification.validate(jsonObject)) ;
+            issueCount++;
         }
         Assert.assertEquals(issueCount, 0);
         Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);

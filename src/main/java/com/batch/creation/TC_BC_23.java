@@ -51,9 +51,9 @@ public class TC_BC_23 {
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); 
-	          String directoryStructure = bc.getDirectoryStructure(); 
-	          long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
+        long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
 
         Integer maxLookUpDays = bc.getMaxLookUpDays();
@@ -81,7 +81,7 @@ public class TC_BC_23 {
         AmazonS3Client amazonS3Client = new AmazonS3Client();
         try {
             amazonS3Client.deleteObject(s3Bucket, s3Prefix + "TestAutomation/" + pilotId + "/" + dataSetType);
-            System.out.println("Deleted Objects");
+            System.out.println("Deleting Objects");
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
             System.exit(1);
@@ -94,12 +94,14 @@ public class TC_BC_23 {
         c.setTime(new Date()); // Using today's date
 
 
-        SimpleDateFormat dt = new SimpleDateFormat("yyyy/MM/dd");
+
+
         for (int i = 1; i <= 9; i++) {
+            String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
             if (i <= maxLookUpDays) {
-                LookUpDirectories.add(dt.format(c.getTime()));
+                LookUpDirectories.add(dt);
             }
-            String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt.format(c.getTime()) + "/" + getClass().getSimpleName();
+            String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
             String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/dt" + i;
             AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
