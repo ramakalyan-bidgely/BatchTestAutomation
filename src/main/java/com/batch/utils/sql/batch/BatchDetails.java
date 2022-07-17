@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class BatchDetails {
     private static Timestamp latest_modified_time;
+    public Timestamp getlatest_modified_time;
     private String batch_id;
     private int pilot_id;
     private String component;
@@ -13,7 +14,7 @@ public class BatchDetails {
     private String batch_creation_type;
 
     //------------------------------------
-    public static Timestamp getLatest_modified_time() {
+    public Timestamp getlatest_modified_time() {
         return latest_modified_time;
     }
 

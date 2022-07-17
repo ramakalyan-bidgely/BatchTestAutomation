@@ -5,9 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,13 +41,25 @@ public class BatchJDBCTemplate {
         return batches;
     }
 
-    public Timestamp getLatestObjectDetails(Integer pilotId, String component) {
+//    public Timestamp getLatestObjectDetails(Integer pilotId, String component) {
+//
+//        String SQL = "select latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
+//        try {
+//            //Timestamp latestModifiedTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
+//            Timestamp latest_modified_time = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
+//            return latest_modified_time;
+//        } catch (EmptyResultDataAccessException e) {
+//            return null;
+//        }
+//    }
 
-        String SQL = "select latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
+    public List<Map<String, Object>> getLatestObjectDetails(Integer pilotId, String component) {
+
+        String SQL = "select latest_modified_key, latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
         try {
             //Timestamp latestModifiedTime = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
-            Timestamp latest_modified_time = jdbcTemplateObject.queryForObject(SQL, new Object[]{pilotId, component}, Timestamp.class);
-            return latest_modified_time;
+            List<Map<String, Object>> latestObjectDetails = jdbcTemplateObject.queryForList(SQL, new Object[]{pilotId, component});
+            return latestObjectDetails;
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

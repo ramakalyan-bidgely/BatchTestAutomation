@@ -12,6 +12,7 @@ import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
+import com.batch.utils.sql.batch.MainDataProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -26,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
+import static com.batch.api.common.Constants.InputConfigConstants.*;
 
 @Test()
 public class TC_BC_23 {
@@ -34,26 +35,25 @@ public class TC_BC_23 {
     private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
-    @Test()
-    @Parameters("batchConfigPath")
-    public void validate(String batchConfigPath) throws IOException, InterruptedException {
-
-
+    @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
+    @Parameters({"batchConfigPath", "triggerPoint"})
+    void validate(JsonObject batchConfig) throws IOException, InterruptedException {
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
+        //JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
         int pilotId = bc.getPilotId();
 
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); 
-	          String directoryStructure = bc.getDirectoryStructure(); 
-	          long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
+        long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
 
         Integer maxLookUpDays = bc.getMaxLookUpDays();
@@ -70,18 +70,15 @@ public class TC_BC_23 {
 
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-        Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
-        if (latest_modified_time == null) {
-            Date now = new Date();
-            Timestamp ts = new Timestamp(now.getTime());
-            latest_modified_time = ts;
-        }
+        List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+
+        Timestamp latest_modified_time = (Timestamp) (latestObjectDetails.size() > 0 ? latestObjectDetails.get(0).get(LATEST_MODIFIED_TIME) : new Timestamp(new Date().getTime()));
 
         //Clearing up old data
         AmazonS3Client amazonS3Client = new AmazonS3Client();
         try {
             amazonS3Client.deleteObject(s3Bucket, s3Prefix + "TestAutomation/" + pilotId + "/" + dataSetType);
-            System.out.println("Deleted Objects");
+            System.out.println("Deleting Objects");
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
             System.exit(1);
@@ -94,14 +91,14 @@ public class TC_BC_23 {
         c.setTime(new Date()); // Using today's date
 
 
-        SimpleDateFormat dt = new SimpleDateFormat("yyyy/MM/dd");
         for (int i = 1; i <= 9; i++) {
+            String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
             if (i <= maxLookUpDays) {
-                LookUpDirectories.add(dt.format(c.getTime()));
+                LookUpDirectories.add(dt);
             }
-            String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt.format(c.getTime()) + "/" + getClass().getSimpleName();
+            String DEST = S3_PREFIX + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-            String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/dt" + i;
+            String SRC = S3_PREFIX + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/dt" + i;
             AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
             long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
             Reporter.log("Object Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);

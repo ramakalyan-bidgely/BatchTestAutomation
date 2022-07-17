@@ -7,6 +7,7 @@ import com.batch.creation.DBEntryVerification;
 import com.batch.creation.ValidateManifestFile;
 import com.batch.utils.*;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
+import com.batch.utils.sql.batch.MainDataProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -24,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
+import static com.batch.api.common.Constants.InputConfigConstants.*;
 
 
 @Test()
@@ -35,16 +36,16 @@ public class TC_BC_12 {
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
     private Integer issueCount = 0;
 
-    @Test()
-    @Parameters({"batchConfigPath"})
-    public void validate(String batchConfigPath) throws IOException, InterruptedException {
-
+    @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
+    @Parameters({"batchConfigPath", "triggerPoint"})
+    void validate(JsonObject batchConfig) throws IOException, InterruptedException {
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
+        //JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
         int pilotId = bc.getPilotId();
 
@@ -62,10 +63,11 @@ public class TC_BC_12 {
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
-        String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) : new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+        String DEST = S3_PREFIX + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
+        String SRC = S3_PREFIX + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
 
@@ -75,12 +77,9 @@ public class TC_BC_12 {
         VariableCollections.map.put("batch_creation_time", LatestBatchCreationTime);
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-        Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
-        if (latest_modified_time == null) {
-            Date now = new Date();
-            Timestamp ts = new Timestamp(now.getTime());
-            latest_modified_time = ts;
-        }
+          List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+
+        Timestamp latest_modified_time = (Timestamp) (latestObjectDetails.size() > 0 ? latestObjectDetails.get(0).get(LATEST_MODIFIED_TIME) : new Timestamp(new Date().getTime()));
 
         long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
         Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);

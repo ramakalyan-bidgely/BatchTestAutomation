@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.utils.*;
+import com.batch.utils.sql.batch.MainDataProvider;
 import com.google.gson.JsonObject;
 
 import org.testng.Assert;
@@ -28,22 +29,25 @@ public class TC_BC_03 {
     private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
-    @Test()
+    @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
     @Parameters("batchConfigPath")
-    public void validate(String batchConfigPath) throws IOException, InterruptedException {
+    public void validate(JsonObject batchConfig) throws IOException, InterruptedException {
 
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
+//        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
 
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); String directoryStructure = bc.getDirectoryStructure();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
         long intervalInSec = bc.getIntervalInSec();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
@@ -53,10 +57,10 @@ public class TC_BC_03 {
         Reporter.log("Latest Batch Creation Time: " + LatestBatchCreationTime, true);
         List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);
         Reporter.log("Number of Batches generated: " + GeneratedBatches, true);
-        for (String str : GeneratedBatches) {
-            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, str);
-            Reporter.log("Validating batch entry in the table -> " + str, true);
-            if (!DBEntryVerification.validate(UUID.fromString(jsonObject.get("batchId").getAsString()), jsonObject.get("batchCreationType").getAsString()))
+        for (String batchManifest : GeneratedBatches) {
+            JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
+            Reporter.log("Validating batch entry in the table -> " + batchManifest, true);
+            if (!DBEntryVerification.validate(jsonObject))
                 issueCount++;
         }
         Assert.assertEquals(issueCount, 0);

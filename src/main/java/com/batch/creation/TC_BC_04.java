@@ -8,6 +8,7 @@ import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
 import com.batch.utils.S3FileTransferHandler;
+import com.batch.utils.sql.batch.MainDataProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
+import static com.batch.api.common.Constants.InputConfigConstants.S3_PREFIX;
 
 @Test
 public class TC_BC_04 {
@@ -33,25 +35,25 @@ public class TC_BC_04 {
     private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
-    @Test()
+    @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
     @Parameters({"batchConfigPath", "triggerPoint"})
-    void validate(String batchConfigPath, Integer triggerPoint) throws IOException, InterruptedException {
+    void validate(JsonObject batchConfig) throws IOException, InterruptedException {
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
+        //JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
-
-        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
         int pilotId = bc.getPilotId();
 
         String s3Prefix = "s3://";
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
-        String BucketPrefix = bc.getPrefix(); 
-	          String directoryStructure = bc.getDirectoryStructure(); 
-	          long intervalInSec= bc.getIntervalInSec();
+        String BucketPrefix = bc.getPrefix();
+        String directoryStructure = bc.getDirectoryStructure();
+        long intervalInSec = bc.getIntervalInSec();
         String dataSetType = bc.getDatasetType();
 
 
@@ -59,10 +61,11 @@ public class TC_BC_04 {
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
-        String DEST = s3Prefix + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
+        dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) : new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+        String DEST = S3_PREFIX + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
         AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-        String SRC = s3Prefix + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
+        String SRC = S3_PREFIX + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName();
         AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
 
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);

@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.batch.utils.sql.batch.BatchDetails.getLatest_modified_time;
+import static com.batch.api.common.Constants.InputConfigConstants.S3_PREFIX;
+
 
 /**
  * @author Rama Kalyan
@@ -143,6 +144,8 @@ public class S3FileTransferHandler {
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
         ArrayList<String> keys = new ArrayList<>();
         ListObjectsV2Result objs = null;
+
+
         do {
             objs = amazonS3Client.listObjectsV2(ListObjreq);
             summ.addAll(objs.getObjectSummaries());
@@ -151,7 +154,7 @@ public class S3FileTransferHandler {
 
 
         for (S3ObjectSummary summary : summ) {
-            keys.add(summary.getKey());
+            keys.add(S3_PREFIX + summary.getBucketName() + "/" + summary.getKey());
         }
         ArrayList<String> objects = new ArrayList<>();
         for (int i = 1; i < keys.size(); i++) {
@@ -181,6 +184,11 @@ public class S3FileTransferHandler {
 
             for (S3ObjectSummary summary : summ) {
                 List<String> ObjName = Arrays.asList(summary.getKey().split("/"));
+                try {
+                    Thread.sleep(1000);  //added one sec delay between each file copy/push to get rid of skip objects scenario in batch creation service
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 CopyObjectRequest copyObjRequest = new CopyObjectRequest(summary.getBucketName(), summary.getKey(), DEST_URI.getBucket(), DEST_URI.getKey() + "/" + ObjName.get(ObjName.size() - 1));
                 amazonS3Client.copyObject(copyObjRequest);
                 Reporter.log(ObjName + " transferred", true);
