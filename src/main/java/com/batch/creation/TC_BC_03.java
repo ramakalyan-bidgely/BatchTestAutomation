@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3URI;
 import com.batch.creation.BatchCountValidator;
 import com.batch.creation.DBEntryVerification;
 import com.batch.utils.*;
+import com.batch.utils.sql.batch.MainDataProvider;
 import com.google.gson.JsonObject;
 
 import org.testng.Assert;
@@ -28,16 +29,18 @@ public class TC_BC_03 {
     private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
-    @Test()
+    @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
     @Parameters("batchConfigPath")
-    public void validate(String batchConfigPath) throws IOException, InterruptedException {
+    public void validate(JsonObject batchConfig) throws IOException, InterruptedException {
 
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
+//        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
 
         int pilotId = bc.getPilotId();
@@ -57,8 +60,8 @@ public class TC_BC_03 {
         for (String batchManifest : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
             Reporter.log("Validating batch entry in the table -> " + batchManifest, true);
-            if (!DBEntryVerification.validate(jsonObject)) ;
-            issueCount++;
+            if (!DBEntryVerification.validate(jsonObject))
+                issueCount++;
         }
         Assert.assertEquals(issueCount, 0);
         Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);

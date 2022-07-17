@@ -2,7 +2,7 @@ package com.batch.creation;
 
 
 /**
- * @autor Rama kalyan
+ * @autor Rama Kalyan
  */
 
 
@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 
 import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
+import com.batch.utils.sql.batch.MainDataProvider;
 import com.google.gson.JsonObject;
 import org.testng.Assert;
 import org.testng.Reporter;
@@ -31,16 +32,18 @@ public class TC_BC_01 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private Integer issueCount = 0;
 
-    @Test
-    @Parameters("batchConfigPath")
-    public void validate(String batchConfigPath) throws IOException {
+    @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
+    //@Parameters("batchConfigPath")
+    public void validate(JsonObject batchConfig) throws IOException {
+
         Calendar c = Calendar.getInstance();
         Reporter.log(getClass().getSimpleName() + " trigger time -> " + c.getTime(), true);
 
 
-        JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
+        //JsonObject batchConfig = InputConfigParser.getBatchConfig(batchConfigPath);
 
-        InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
+        InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
         int pilotId = bc.getPilotId();
         String s3bucket = bc.getBucket();
@@ -103,7 +106,7 @@ public class TC_BC_01 {
             Reporter.log("Invalid number of Max Lookup Days : " + maxLookupDays, true);
         }
 
-        if (!directoryStructure.equals("Firehose")) {
+        if (!(directoryStructure.equals("Firehose") || directoryStructure.equals("PartitionByDate"))) {
             issueCount++;
             Reporter.log("Issue in directory Structure : " + directoryStructure, true);
 

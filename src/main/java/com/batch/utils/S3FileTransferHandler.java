@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.batch.utils.sql.batch.BatchDetails.getLatest_modified_time;
+import static com.batch.api.common.Constants.InputConfigConstants.S3_PREFIX;
+
 
 /**
  * @author Rama Kalyan
@@ -143,6 +144,8 @@ public class S3FileTransferHandler {
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
         ArrayList<String> keys = new ArrayList<>();
         ListObjectsV2Result objs = null;
+
+
         do {
             objs = amazonS3Client.listObjectsV2(ListObjreq);
             summ.addAll(objs.getObjectSummaries());
@@ -151,7 +154,7 @@ public class S3FileTransferHandler {
 
 
         for (S3ObjectSummary summary : summ) {
-            keys.add(summary.getKey());
+            keys.add(S3_PREFIX + summary.getBucketName() + "/" + summary.getKey());
         }
         ArrayList<String> objects = new ArrayList<>();
         for (int i = 1; i < keys.size(); i++) {

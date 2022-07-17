@@ -7,10 +7,10 @@ import org.testng.annotations.DataProvider;
 
 
 public class MainDataProvider {
-    @DataProvider(name = "input-data-provider")
+    @DataProvider(name = "input-data-provider", parallel = true)
     public Object[][] dp() {
 
-        String ConfigFileJsonPath = "C:\\Users\\BizAct-64\\Desktop\\BatchSchedulingCases\\src\\main\\resources\\input_config.json";
+        String ConfigFileJsonPath = "raw_batch_config.json";
         InputConfigParser x = new InputConfigParser();
         JsonObject jsonobj = InputConfigParser.getBatchConfig(ConfigFileJsonPath);
         JsonArray jsonArr = jsonobj.getAsJsonArray("batchConfigs");

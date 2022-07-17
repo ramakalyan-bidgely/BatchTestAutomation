@@ -119,6 +119,10 @@ public class ValidateManifestFile {
 
         }
 
+        if (!manifestObject.contains(mfResponse.getbatchId())) {
+            issueCount++;
+        }
+
 
         Assert.assertEquals(issueCount, 0);
         // Compare common kys between config and manifest file

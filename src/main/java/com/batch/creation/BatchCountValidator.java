@@ -2,16 +2,14 @@ package com.batch.creation;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import com.batch.utils.S3FileTransferHandler;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.json.JSONArray;
 import org.testng.Reporter;
 
 import java.io.BufferedReader;
@@ -20,6 +18,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.*;
+
+import static com.batch.api.common.Constants.InputConfigConstants.LATEST_MODIFIED_TIME;
 
 
 /**
@@ -136,7 +136,9 @@ public class BatchCountValidator {
         long DataAccumulatedSize = 0L;
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-        Timestamp latest_modified_time = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+        List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+        Timestamp latest_modified_time = (Timestamp) latestObjectDetails.get(0).get(LATEST_MODIFIED_TIME);
+
         if (latest_modified_time == null) {
             Date now = new Date();
             Timestamp ts = new Timestamp(now.getTime());
@@ -166,8 +168,13 @@ public class BatchCountValidator {
     public static long SizeOfObjects(String s3Bucket, JsonArray batchObjects) {
         long DataAccumulatedSize = 0;
         for (JsonElement arr : batchObjects) {
-            long ObjectLength = amazons3Client.getObject(new GetObjectRequest(s3Bucket, arr.getAsString())).getObjectMetadata().getContentLength();
-            DataAccumulatedSize += ObjectLength;
+            Reporter.log(arr.getAsString(), true);
+            AmazonS3URI batchObj = new AmazonS3URI(arr.getAsString());
+            S3Object Obj = amazons3Client.getObject(batchObj.getBucket(), batchObj.getKey());
+            DataAccumulatedSize += Obj.getObjectMetadata().getContentLength();
+
+            // long ObjectLength = amazons3Client.getObject(new GetObjectRequest(batchObj.getBucket(), batchObj.getKey())).getObjectMetadata().getContentLength();
+            //DataAccumulatedSize += ObjectLength;
         }
         return DataAccumulatedSize;
     }

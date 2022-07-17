@@ -37,6 +37,7 @@ dependencies {
     implementation "org.springframework:spring-beans:5.3.14"
     implementation "org.springframework:spring-jdbc:5.3.14"
     implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
+    //implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.29'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
     // https://mvnrepository.com/artifact/io.qameta.allure/allure-maven
