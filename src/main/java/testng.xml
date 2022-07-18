@@ -1,11 +1,9 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
 
 <suite name="BatchCreationQASuite" data-provider-thread-count="5" preserve-order="true" verbose="2">
-    <listeners>
-        <listener class-name="org.testng.reporters.VerboseReporter"/>
-    </listeners>
+
     <suite-files>
-        <suite-file path="user_batch_testng.xml"/>
+<!--        <suite-file path="user_batch_testng.xml"/>-->
         <suite-file path="raw_batch_testng.xml"/>
     </suite-files>
 

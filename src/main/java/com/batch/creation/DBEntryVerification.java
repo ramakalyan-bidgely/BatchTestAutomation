@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 import org.testng.Reporter;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 import static com.batch.api.common.Constants.InputConfigConstants.*;
 
@@ -36,14 +36,14 @@ public class DBEntryVerification {
         Integer pilotId = manifestObjContent.get(PILOT_ID).getAsInt();
         String component = manifestObjContent.get(COMPONENT).getAsString();
         String batch_creation_type = manifestObjContent.get(BATCH_CREATION_TYPE).getAsString();
-        Timestamp latest_modified_time = Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S").format(new Date(manifestObjContent.get(LATEST_OBJECT_MODIFIED_TIME).getAsLong())));
-        Timestamp batch_creation_time = Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S").format(new Date(manifestObjContent.get(BATCH_CREATION_TIME).getAsLong())));
+        Timestamp latest_modified_time = Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(manifestObjContent.get(LATEST_OBJECT_MODIFIED_TIME).getAsLong())));
+        Timestamp batch_creation_time = Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(manifestObjContent.get(BATCH_CREATION_TIME).getAsLong())));
         String latest_object_key = manifestObjContent.get(LATEST_OBJECT_KEY).getAsString();
 
         if (batchId.version() == 4) {
 
             List<BatchDetails> BatchIdEntry = batchJDBCTemplate.getBatch(String.valueOf(batchId));
-            Reporter.log("Batch ID is valid and available : " + BatchIdEntry.size(), true);
+            Reporter.log("Batch ID is valid and available ->" + batchId, true);
 
             if (pilotId == BatchIdEntry.get(0).getPilot_id()) {
                 Reporter.log("Pilot ID is matched", true);
@@ -58,10 +58,14 @@ public class DBEntryVerification {
                 return false;
             }
 
-            if (batch_creation_time.compareTo(BatchIdEntry.get(0).getBatch_creation_time()) == 0) {
-                Reporter.log("Latest Batch creation time matched", true);
+
+            Reporter.log("Batch creation time in manifest ->" + batch_creation_time, true);
+            Reporter.log("Batch creation time in db->" + Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(BatchIdEntry.get(0).getBatch_creation_time())), true);
+
+            if (batch_creation_time.compareTo(Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(BatchIdEntry.get(0).getBatch_creation_time()))) == 0) {
+                Reporter.log("Batch creation time matched", true);
             } else {
-                Reporter.log("Mismatch in Latest Batch creation time", true);
+                Reporter.log("Mismatch in Batch creation time", true);
                 return false;
             }
 

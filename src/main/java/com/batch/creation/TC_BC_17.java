@@ -40,7 +40,7 @@ public class TC_BC_17 {
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
 
-        String s3Prefix = "s3://";
+        
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
@@ -71,6 +71,7 @@ public class TC_BC_17 {
             }
             CharSequence fileName = null;
 
+            dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) : new SimpleDateFormat("yyyy/MM/dd").format(new Date());
             String DEST = S3_PREFIX + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();        //long DataAccumulatedSize = BatchCountValidator.UploadAndAccumulate(Dir, DEST);
 
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
@@ -80,7 +81,6 @@ public class TC_BC_17 {
             long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
             Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
 
-            dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) : new SimpleDateFormat("yyyy/MM/dd").format(new Date());
             //We can pass current automation execution date to prefix as Automation needs to test data from automation only
             Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
 
@@ -97,7 +97,7 @@ public class TC_BC_17 {
                 if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) {
                     SIZE_BASED_CNT++;
                     Reporter.log("SIZE_BASED_CNT = " + SIZE_BASED_CNT, true);
-                    Reporter.log("manifest file: " + batchManifest, true);
+
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);

@@ -26,7 +26,7 @@ import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 public class TC_BC_07 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private Integer issueCount = 0;
-    String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+
 
     @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
     @Parameters({"batchConfigPath", "triggerPoint"})

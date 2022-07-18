@@ -48,7 +48,7 @@ public class TC_BC_23 {
 
         int pilotId = bc.getPilotId();
 
-        String s3Prefix = "s3://";
+
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
@@ -77,7 +77,7 @@ public class TC_BC_23 {
         //Clearing up old data
         AmazonS3Client amazonS3Client = new AmazonS3Client();
         try {
-            amazonS3Client.deleteObject(s3Bucket, s3Prefix + "TestAutomation/" + pilotId + "/" + dataSetType);
+            amazonS3Client.deleteObject(s3Bucket, "TestAutomation/" + pilotId + "/" + dataSetType);
             System.out.println("Deleting Objects");
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());

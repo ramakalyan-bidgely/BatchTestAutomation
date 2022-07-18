@@ -41,7 +41,7 @@ public class TC_BC_14 {
         //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
-        String s3Prefix = "s3://";
+        
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();

@@ -49,7 +49,7 @@ public class TC_BC_12 {
 
         int pilotId = bc.getPilotId();
 
-        String s3Prefix = "s3://";
+        
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
@@ -103,7 +103,7 @@ public class TC_BC_12 {
                 if (jsonObject.get("batchCreationType").getAsString().equals("TIME_BASED")) {
                     TIME_BASED_CNT++;
                     Reporter.log("TIME_BASED_CNT = " + TIME_BASED_CNT, true);
-                    Reporter.log("manifest file: " + batchManifest, true);
+                    
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);

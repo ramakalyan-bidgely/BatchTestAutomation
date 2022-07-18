@@ -48,7 +48,7 @@ public class TC_BC_05 {
 
         int pilotId = bc.getPilotId();
 
-        String s3Prefix = "s3://";
+        
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix(); 

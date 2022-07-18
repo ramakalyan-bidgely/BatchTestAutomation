@@ -39,7 +39,7 @@ public class TC_BC_15 {
         //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
-        String s3Prefix = "s3://";
+        
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
@@ -95,7 +95,7 @@ public class TC_BC_15 {
                 if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) {
                     SIZE_BASED_CNT++;
                     Reporter.log("SIZE_BASED_CNT = " + SIZE_BASED_CNT, true);
-                    Reporter.log("manifest file: " + batchManifest, true);
+                    
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);

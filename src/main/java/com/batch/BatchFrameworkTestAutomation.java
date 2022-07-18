@@ -49,7 +49,9 @@ public class BatchFrameworkTestAutomation {
         String SuitePath = props.getProperty("SuitePath");
         suites.add(SuitePath);
         testng.setTestSuites(suites);
-
+        
+        testng.setParallel("parallel");
+        testng.setSuiteThreadPoolSize(5);
 
         testng.run();
 
