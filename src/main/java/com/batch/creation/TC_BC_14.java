@@ -41,7 +41,7 @@ public class TC_BC_14 {
         //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
-        String s3Prefix = "s3://";
+        
         int pilotId = bc.getPilotId();
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
@@ -72,7 +72,7 @@ public class TC_BC_14 {
         long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
         Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
 
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, directoryStructure);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 

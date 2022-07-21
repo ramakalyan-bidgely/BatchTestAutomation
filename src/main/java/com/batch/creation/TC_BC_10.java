@@ -50,7 +50,7 @@ public class TC_BC_10 {
 
         int pilotId = bc.getPilotId();
 
-        String s3Prefix = "s3://";
+        
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
@@ -85,7 +85,7 @@ public class TC_BC_10 {
 
 
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, directoryStructure);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
@@ -103,7 +103,7 @@ public class TC_BC_10 {
                 if (jsonObject.get("batchCreationType").getAsString().equals("TIME_BASED")) {
                     TIME_BASED_CNT++;
                     Reporter.log("TIME_BASED_CNT = " + TIME_BASED_CNT, true);
-                    Reporter.log("manifest file: " + batchManifest, true);
+                    
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);

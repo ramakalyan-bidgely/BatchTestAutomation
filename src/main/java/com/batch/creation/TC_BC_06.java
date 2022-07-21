@@ -49,7 +49,7 @@ public class TC_BC_06 {
 
         int pilotId = bc.getPilotId();
 
-        String s3Prefix = "s3://";
+        
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();
         String BucketPrefix = bc.getPrefix();
@@ -77,7 +77,7 @@ public class TC_BC_06 {
         VariableCollections.map.put("batch_creation_time", LatestBatchCreationTime);
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-          List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+        List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
 
         Timestamp latest_modified_time = (Timestamp) (latestObjectDetails.size() > 0 ? latestObjectDetails.get(0).get(LATEST_MODIFIED_TIME) : new Timestamp(new Date().getTime()));
 
@@ -86,11 +86,12 @@ public class TC_BC_06 {
 
 
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, directoryStructure);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
         //BatchExecutionWatcher.bewatch(triggerPoint);
+
         Thread.sleep(600000);
 
         int SIZE_BASED_CNT = 0;
@@ -104,7 +105,6 @@ public class TC_BC_06 {
                 if (jsonObject.get("batchCreationType").getAsString().equals("SIZE_BASED")) {
                     SIZE_BASED_CNT++;
                     Reporter.log("SIZE_BASED_CNT = " + SIZE_BASED_CNT, true);
-                    Reporter.log("manifest file: " + batchManifest, true);
 
                     //passing batchConfig ,manifest Object details
                     ValidateManifestFile.ManifestFileValidation(s3Bucket, batchManifest, bc);
@@ -121,8 +121,8 @@ public class TC_BC_06 {
             }
             issueCount += (SIZE_BASED_CNT == ExpectedNoOfBatches) ? 0 : 1;
             for (String value : objectNames) {
-                System.out.println("Value: " + value);
-                System.out.println("batch Objs: ->" + batchObjs);
+                Reporter.log("Value: " + value, true);
+                Reporter.log("batch Objs: ->" + batchObjs, true);
                 if (!batchObjs.contains(value)) issueCount++;
             }
         } catch (Throwable e) {

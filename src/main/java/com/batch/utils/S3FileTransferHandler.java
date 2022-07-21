@@ -19,7 +19,7 @@ import com.amazonaws.services.s3.transfer.TransferProgress;
 import org.testng.Reporter;
 
 import java.io.File;
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -184,11 +184,11 @@ public class S3FileTransferHandler {
 
             for (S3ObjectSummary summary : summ) {
                 List<String> ObjName = Arrays.asList(summary.getKey().split("/"));
-                try {
+                /*try {
                     Thread.sleep(1000);  //added one sec delay between each file copy/push to get rid of skip objects scenario in batch creation service
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
-                }
+                }*/
                 CopyObjectRequest copyObjRequest = new CopyObjectRequest(summary.getBucketName(), summary.getKey(), DEST_URI.getBucket(), DEST_URI.getKey() + "/" + ObjName.get(ObjName.size() - 1));
                 amazonS3Client.copyObject(copyObjRequest);
                 Reporter.log(ObjName + " transferred", true);

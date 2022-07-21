@@ -3,10 +3,6 @@ package com.batch.creation;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.batch.creation.BatchCountValidator;
-import com.batch.creation.BatchExecutionWatcher;
-import com.batch.creation.DBEntryVerification;
-import com.batch.creation.ValidateManifestFile;
 import com.batch.utils.InputConfig;
 import com.batch.utils.InputConfigParser;
 import com.batch.utils.ManifestFileParser;
@@ -27,10 +23,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static com.batch.api.common.Constants.InputConfigConstants.*;
+import static com.batch.api.common.Constants.InputConfigConstants.LATEST_MODIFIED_TIME;
+import static com.batch.api.common.Constants.InputConfigConstants.S3_PREFIX;
 
 @Test()
-public class TC_BC_23 {
+public class TC_BC_24 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private Integer issueCount = 0;
     String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
@@ -91,6 +88,10 @@ public class TC_BC_23 {
         c.setTime(new Date()); // Using today's date
 
 
+        if (maxLookUpDays == -1) {
+
+        }
+
         for (int i = 1; i <= 9; i++) {
             String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
             if (i <= maxLookUpDays) {
@@ -105,9 +106,9 @@ public class TC_BC_23 {
             c.add(Calendar.DATE, -1); // Adding 5 days
         }
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
-       /* Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix, dataSizeInbytes, maxLookUpDays,latest_modified_time);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix, dataSizeInbytes, maxLookUpDays, latest_modified_time, directoryStructure);
 
-        Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);*/
+        Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
         Reporter.log("Waiting for batch creation service to complete .. ", true);
         Thread.sleep(600000);

@@ -26,7 +26,6 @@ import static com.batch.api.common.Constants.InputConfigConstants.BATCH_CONFIGS;
 public class TC_BC_11 {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private Integer issueCount = 0;
-    String dt = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
 
     @Test(dataProvider = "input-data-provider", dataProviderClass = MainDataProvider.class)
     @Parameters({"batchConfigPath", "triggerPoint"})
@@ -38,7 +37,6 @@ public class TC_BC_11 {
 
         //InputConfig bc = InputConfigParser.getInputConfig(batchConfig.get(BATCH_CONFIGS).getAsJsonArray().get(0).getAsJsonObject());
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
-
 
 
         int pilotId = bc.getPilotId();
@@ -56,8 +54,10 @@ public class TC_BC_11 {
         for (String batchManifest : GeneratedBatches) {
             JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
             Reporter.log("Validating batch entry in the table -> " + batchManifest, true);
-            if (!DBEntryVerification.validate(jsonObject))
+            if (!DBEntryVerification.validate(jsonObject)) {
                 issueCount++;
+            }
+
         }
         Assert.assertEquals(issueCount, 0);
         Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
