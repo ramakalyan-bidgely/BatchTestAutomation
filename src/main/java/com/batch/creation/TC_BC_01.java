@@ -79,7 +79,7 @@ public class TC_BC_01 {
         //Validating maxLookupDays
         int maxLookupDays = bc.getMaxLookUpDays();
 
-        boolean isMaxLookupDaysConfigured = maxLookupDays > 0;
+        boolean isMaxLookupDaysConfigured = maxLookupDays >= -1;
 
 
         if (isBucketAvailable && isDataSizeConfigured && isIntervalInSecConfigured && isMaxLookupDaysConfigured) {

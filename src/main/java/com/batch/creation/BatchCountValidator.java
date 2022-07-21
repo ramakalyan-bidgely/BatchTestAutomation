@@ -9,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.json.JSONArray;
 import org.testng.Reporter;
 
 import java.io.BufferedReader;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.batch.api.common.Constants.InputConfigConstants.LATEST_MODIFIED_TIME;
@@ -95,13 +95,21 @@ public class BatchCountValidator {
     }
 
 
-    public static Integer getExpectedNoOfBatches(String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays, Timestamp latest_modified_time, Timestamp batch_creation_time, long intervalInSec) {
+    public static Integer getExpectedNoOfBatches(String s3Bucket, String prefix, Long dataSizeInBytes, Integer maxLookUpDays, Timestamp latest_modified_time, String directoryStructure) {
 
+        Calendar c = Calendar.getInstance();
         Integer expectedNumberOfBatches = 0;
         long tempAccumulatedSize = 0L;
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
         ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket).withPrefix(prefix);
+
+        if (maxLookUpDays > -1) {
+            c.add(Calendar.DATE, -maxLookUpDays);
+            String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
+            ListObjreq = ListObjreq.withStartAfter(dt);
+        }
+
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
         ListObjectsV2Result objs = null;
         do {
@@ -112,8 +120,8 @@ public class BatchCountValidator {
 
 
         for (S3ObjectSummary summary : summ) {
-
-            if (latest_modified_time.compareTo(summary.getLastModified()) < 0) {
+// below condition yet to be modified based on the maxlookupdays logic
+            if (maxLookUpDays == -1 || latest_modified_time.compareTo(summary.getLastModified()) < 0) {
                 Reporter.log("Object accumulated : ", true);
                 Reporter.log(summary.getKey(), true);
                 tempAccumulatedSize += summary.getSize();
@@ -127,7 +135,6 @@ public class BatchCountValidator {
             Reporter.log("Configured Sized Data " + dataSizeInBytes + " hasn't been accumulated. Hence one TIME_BASED manifest batch may get generated !", true);
             expectedNumberOfBatches = 1;
         }
-
         return expectedNumberOfBatches;
     }
 

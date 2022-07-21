@@ -39,7 +39,7 @@
       "batchCreationConfig": {
         "bucket": "bidgely-adhoc-batch-qa",
         "prefix": "TestAutomation/10061/raw_consumption_data",
-        "directoryStructure": "PartitionByDate",
+        "directoryStructure": "Firehose",
         "datasetType": "raw_consumption_data",
         "dataFormat": "parquet",
         "dataFormatOptions": {
