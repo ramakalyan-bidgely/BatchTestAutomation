@@ -78,13 +78,13 @@ public class TC_BC_23 {
         AmazonS3Client amazonS3Client = new AmazonS3Client();
         try {
             amazonS3Client.deleteObject(s3Bucket, "TestAutomation/" + pilotId + "/" + dataSetType);
-            System.out.println("Deleting Objects");
+            System.out.println("Delete Objects ..");
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
             System.exit(1);
         }
 
-        Thread.sleep(10000);
+        Thread.sleep(30000);
 
         List<String> LookUpDirectories = new ArrayList<>();
 
@@ -98,7 +98,7 @@ public class TC_BC_23 {
             }
             String DEST = S3_PREFIX + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
-            String SRC = S3_PREFIX + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/dt" + i;
+            String SRC = S3_PREFIX + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/dt" + (i-1);
             AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
             long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
             Reporter.log("Object Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);

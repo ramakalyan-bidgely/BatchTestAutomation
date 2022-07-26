@@ -121,5 +121,15 @@
             <class name="com.batch.creation.TC_BC_23"/>
         </classes>
     </test>
+    <test name="test24">
+        <classes>
+            <class name="com.batch.creation.TC_BC_24"/>
+        </classes>
+    </test>
+    <test name="test25">
+        <classes>
+            <class name="com.batch.creation.TC_BC_25"/>
+        </classes>
+    </test>
 
 </suite>

@@ -120,8 +120,9 @@ public class BatchCountValidator {
 
 
         for (S3ObjectSummary summary : summ) {
-// below condition yet to be modified based on the maxlookupdays logic
-            if (maxLookUpDays == -1 || latest_modified_time.compareTo(summary.getLastModified()) < 0) {
+            // below condition to be modified bit more based on the maxlookupdays logic
+
+            if (maxLookUpDays == -1 || latest_modified_time.equals(null) || (latest_modified_time.compareTo(summary.getLastModified()) < 0)) {
                 Reporter.log("Object accumulated : ", true);
                 Reporter.log(summary.getKey(), true);
                 tempAccumulatedSize += summary.getSize();
@@ -131,6 +132,8 @@ public class BatchCountValidator {
                 }
             }
         }
+
+
         if (expectedNumberOfBatches == 0) {
             Reporter.log("Configured Sized Data " + dataSizeInBytes + " hasn't been accumulated. Hence one TIME_BASED manifest batch may get generated !", true);
             expectedNumberOfBatches = 1;
