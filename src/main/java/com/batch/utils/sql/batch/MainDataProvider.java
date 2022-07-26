@@ -24,6 +24,23 @@ public class MainDataProvider {
         }
         return returnValue;
     }
+    @DataProvider(name = "A1-data-provider")
+    public Object[][] dpA1() {
+
+        String ConfigFileJsonPath[] = {"user_batch_config.json"};
+        Integer i = 0;
+
+        InputConfigParser x = new InputConfigParser();
+        JsonObject jsonobj = InputConfigParser.getBatchConfig(ConfigFileJsonPath[i]);
+        JsonArray jsonArr = jsonobj.getAsJsonArray("batchConfigs");
+        int arrSize = jsonArr.size();
+        Object[][] returnValue = new Object[arrSize][1];
+        int index = 0;
+        for (Object[] each : returnValue) {
+            each[0] = jsonArr.get(index++).getAsJsonObject();
+        }
+        return returnValue;
+    }
 
 }
 

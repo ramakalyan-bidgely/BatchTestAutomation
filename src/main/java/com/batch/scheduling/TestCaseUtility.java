@@ -73,7 +73,7 @@ class TestCaseUtility {
 
         long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
         Reporter.log("Data Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
-        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time, LatestBatchCreationTime, intervalInSec);
+        Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix + "/" + dt, dataSizeInbytes, maxLookUpDays, latest_modified_time,"Firehose");
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
@@ -85,8 +85,9 @@ class TestCaseUtility {
             Reporter.log("Number of Batches generated: " + GeneratedBatches, true);
             if (GeneratedBatches.size() != ExpectedNoOfBatches) {
                 Reporter.log("generated batches is not equal to expected number of batches", true);
+                issueCount++;
             }
-            issueCount++;
+
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -94,28 +95,17 @@ class TestCaseUtility {
         List<String> batchesInStepDetails = batchJDBCTemplate.listBatchesInStepsWithStatus(bc.getPilotId(), bc.getComponent(), "SCHEDULED");
         List<String> actualBatchIds = new ArrayList();
         List<String> eligibleBatchIds = new ArrayList();
-        for (String batch_id : batchesInStepDetails) {
+        for (String batch_id : batchesInStepDetails) {//select batchID instead of row
             actualBatchIds.add(batch_id);
         }
         for (String batch_id : eligibleBatches) {
             eligibleBatchIds.add(batch_id);
         }
-        actualBatchIds.equals(eligibleBatchIds);
-        if (eligibleBatches.containsAll(actualBatchIds) && actualBatchIds.containsAll(eligibleBatches)) {
+        //actualBatchIds.equals(eligibleBatchIds);Improvement if required
+        if (!eligibleBatches.containsAll(actualBatchIds) && actualBatchIds.containsAll(eligibleBatches)) {
             issueCount++;
             Reporter.log("Wrong batches are Scheduled",true);
         }
-//        for(BatchStepDetails batch:batchesInStepDetails){
-//            dag_ids.add(batch.getDag_id());
-//        }
-//        HashSet<String> hashSetBatches
-//                = new HashSet<String>();
-//        for(String dag:hashSetBatches){
-//            if(AirflowClient.getDagInfo(dag)==null){
-//                test_param=false;
-//                Reporter.log("corresponding dag not present for scheduled batches");
-//            }
-//        };
         Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
         return issueCount;
     }
@@ -295,7 +285,6 @@ class TestCaseUtility {
                 Reporter.log("File location is empty string",true);
                 issueCount++;
             }
-
         }
         Reporter.log(getClass().getSimpleName() + " completed time -> " + c.getTime(), true);
         return issueCount;

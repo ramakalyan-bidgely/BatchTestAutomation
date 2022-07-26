@@ -88,7 +88,7 @@ public class BatchJDBCTemplate {
         return batches;
     }
     public static List<String> listBatchesInStepsWithStatus(Integer pilotId,String component,String status) {
-        String SQL = "select * from batch_step_details where pilot_id=? and component=? and status=?";
+        String SQL = "select * from batch_step_details where pilot_id=? and component=? and status=?; ";//order and limit
         List <BatchStepDetails> batches= jdbcTemplateObject.query(SQL,new Object[] {pilotId,component,status}, new BatchStepDetailsMapper());
         List<String> batchIds=new ArrayList();
         for(BatchStepDetails batch:batches)
@@ -98,7 +98,7 @@ public class BatchJDBCTemplate {
         return batchIds;
     }
     public static List<String> getEligibleBatchesList(Integer pilotId,String component,Boolean isNextBatchDependentOnPrev,Integer parallelBatchesIfIndependent) {
-        String SQL ="select * from batch_details where pilot_id=? and component=? and batch_id not in (select batch_id from batch_step_details where pilot_id=? and component=?)";
+        String SQL ="select * from batch_details where pilot_id=? and component=? and batch_id not in (select batch_id from batch_step_details where pilot_id=? and component=?) order by batch_creation_time desc;";//order
         List<BatchDetails> batches = jdbcTemplateObject.query(SQL,new Object[] {pilotId,component,pilotId,component},new BatchDetailsMapper());
         List<String> batchIds=new ArrayList();
         if(isNextBatchDependentOnPrev==true)
