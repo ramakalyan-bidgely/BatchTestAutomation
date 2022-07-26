@@ -1,4 +1,4 @@
 package com.batch.scheduling;
 
-public class TS_BS_A6 {
+public class TS_BS_S5_T2 {
 }

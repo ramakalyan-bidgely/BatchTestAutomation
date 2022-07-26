@@ -14,7 +14,7 @@ import com.batch.scheduling.TestCaseUtility;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.logging.Logger;
-@Test
+@Test()
 public class TS_BS_A1 {
     public void TS_BS_A1_T1(JsonObject batchConfig)
     {
