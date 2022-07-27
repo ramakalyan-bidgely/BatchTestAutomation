@@ -1,12 +1,15 @@
 package com.batch.utils.sql.batch;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.testng.Reporter;
 
 import javax.sql.DataSource;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +47,29 @@ public class BatchJDBCTemplate {
         return batches;
     }
 
+    public int DelBatchDetails(Integer pilotId, String component) {
+
+        String SQL = "delete from batch_details where pilot_id= ? and component= ?";
+        try {
+            int rowsAffected = jdbcTemplateObject.update(SQL, new Object[]{pilotId, component});
+            return rowsAffected;
+        } catch (NullPointerException e) {
+            Reporter.log("No records there to del.. ", true);
+            return 0;
+        }
+
+
+
+       /* try {
+            Reporter.log("Removing records !", true);
+            int rowsAffected = jdbcTemplateObject.update(SQL, new Object[]{pilotId, component});
+            Reporter.log("Rows affected " + rowsAffected, true);
+            return rowsAffected;
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        }*/
+    }
+
     public List<Map<String, Object>> getLatestObjectDetails(Integer pilotId, String component) {
 
         String SQL = "select latest_modified_key, latest_modified_time from batch_details where pilot_id= ? and component= ?  order by batch_creation_time desc limit 1";
@@ -72,7 +98,8 @@ public class BatchJDBCTemplate {
         List<BatchDetails> batchIds = jdbcTemplateObject.query(SQL, new BatchDetailsMapper());
         return batchIds;
     }
-//    public static List<BatchStepDetails> getBatchInSteps(String batch_id) {
+
+    //    public static List<BatchStepDetails> getBatchInSteps(String batch_id) {
 //        String SQL = "select * from batch_step_details where batch_id=?";
 //        List <BatchStepDetails> batches=jdbcTemplateObject.query(SQL,new Object[] { batch_id},new BatchStepDetailsMapper());
 //        return batches;
@@ -82,33 +109,32 @@ public class BatchJDBCTemplate {
 //        List <BatchStepDetails> batches= jdbcTemplateObject.query(SQL, new BatchStepDetailsMapper());
 //        return batches;
 //    }
-    public static List<BatchStepDetails> listBatchesInSteps(Integer pilotId,String component,String status) {
+    public static List<BatchStepDetails> listBatchesInSteps(Integer pilotId, String component, String status) {
         String SQL = "select * from batch_step_details where pilot_id=? and component=? and status=?;";
-        List <BatchStepDetails> batches= jdbcTemplateObject.query(SQL,new Object[] {pilotId,component,status}, new BatchStepDetailsMapper());
+        List<BatchStepDetails> batches = jdbcTemplateObject.query(SQL, new Object[]{pilotId, component, status}, new BatchStepDetailsMapper());
         return batches;
     }
-    public static List<String> listBatchesInStepsWithStatus(Integer pilotId,String component,String status) {
+
+    public static List<String> listBatchesInStepsWithStatus(Integer pilotId, String component, String status) {
         String SQL = "select * from batch_step_details where pilot_id=? and component=? and status=?; ";//order and limit
-        List <BatchStepDetails> batches= jdbcTemplateObject.query(SQL,new Object[] {pilotId,component,status}, new BatchStepDetailsMapper());
-        List<String> batchIds=new ArrayList();
-        for(BatchStepDetails batch:batches)
-        {
+        List<BatchStepDetails> batches = jdbcTemplateObject.query(SQL, new Object[]{pilotId, component, status}, new BatchStepDetailsMapper());
+        List<String> batchIds = new ArrayList();
+        for (BatchStepDetails batch : batches) {
             batchIds.add(batch.getBatch_id());
         }
         return batchIds;
     }
-    public static List<String> getEligibleBatchesList(Integer pilotId,String component,Boolean isNextBatchDependentOnPrev,Integer parallelBatchesIfIndependent) {
-        String SQL ="select * from batch_details where pilot_id=? and component=? and batch_id not in (select batch_id from batch_step_details where pilot_id=? and component=?) order by batch_creation_time desc;";//order
-        List<BatchDetails> batches = jdbcTemplateObject.query(SQL,new Object[] {pilotId,component,pilotId,component},new BatchDetailsMapper());
-        List<String> batchIds=new ArrayList();
-        if(isNextBatchDependentOnPrev==true)
-        {
-            BatchDetails batch=batches.get(0);
+
+    public static List<String> getEligibleBatchesList(Integer pilotId, String component, Boolean isNextBatchDependentOnPrev, Integer parallelBatchesIfIndependent) {
+        String SQL = "select * from batch_details where pilot_id=? and component=? and batch_id not in (select batch_id from batch_step_details where pilot_id=? and component=?) order by batch_creation_time desc;";//order
+        List<BatchDetails> batches = jdbcTemplateObject.query(SQL, new Object[]{pilotId, component, pilotId, component}, new BatchDetailsMapper());
+        List<String> batchIds = new ArrayList();
+        if (isNextBatchDependentOnPrev == true) {
+            BatchDetails batch = batches.get(0);
             batchIds.add(batch.getBatch_id());
-        }else{
-            for (int i=0;i<parallelBatchesIfIndependent;i++)
-            {
-                BatchDetails batch=batches.get(i);
+        } else {
+            for (int i = 0; i < parallelBatchesIfIndependent; i++) {
+                BatchDetails batch = batches.get(i);
                 batchIds.add(batch.getBatch_id());
             }
         }

@@ -3,7 +3,7 @@
 <suite name="BatchCreationQASuite" data-provider-thread-count="5" preserve-order="true" verbose="2">
 
     <suite-files>
-<!--        <suite-file path="user_batch_testng.xml"/>-->
+<!--    <suite-file path="user_batch_testng.xml"/>-->
         <suite-file path="raw_batch_testng.xml"/>
     </suite-files>
 

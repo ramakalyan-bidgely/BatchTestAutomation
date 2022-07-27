@@ -13,6 +13,9 @@ public class VariableCollections {
     public static Map<String, Object> map = new HashMap<String, Object>();
 
     public static Timestamp batch_creation_time;
+
+    public static String RunType;
+
     public static List<String> manifestObjs;
 
 

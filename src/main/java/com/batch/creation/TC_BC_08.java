@@ -50,7 +50,6 @@ public class TC_BC_08 {
         InputConfig bc = InputConfigParser.getInputConfig(batchConfig);
 
         int pilotId = bc.getPilotId();
-
         
         String s3Bucket = bc.getBucket();
         String component = bc.getComponent();

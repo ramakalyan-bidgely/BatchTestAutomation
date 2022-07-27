@@ -4,7 +4,7 @@
 
     <parameter name="batchConfigPath" value="raw_batch_config.json"/>
     <parameter name="triggerPoint" value="1"/>
-    <test name="test1">
+<!--    <test name="test1">
         <classes>
             <class name="com.batch.creation.TC_BC_01"/>
         </classes>
@@ -115,21 +115,21 @@
         <classes>
             <class name="com.batch.creation.TC_BC_22"/>
         </classes>
-    </test>
+    </test>-->
     <test name="test23">
         <classes>
             <class name="com.batch.creation.TC_BC_23"/>
         </classes>
     </test>
-    <test name="test24">
-        <classes>
-            <class name="com.batch.creation.TC_BC_24"/>
-        </classes>
-    </test>
-    <test name="test25">
-        <classes>
-            <class name="com.batch.creation.TC_BC_25"/>
-        </classes>
-    </test>
+<!--    <test name="test24">-->
+<!--        <classes>-->
+<!--            <class name="com.batch.creation.TC_BC_24"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+<!--    <test name="test25">-->
+<!--        <classes>-->
+<!--            <class name="com.batch.creation.TC_BC_25"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
 </suite>

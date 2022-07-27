@@ -1,6 +1,7 @@
 package com.batch.creation;
 
 
+import com.batch.utils.*;
 import com.batch.utils.sql.batch.BatchDetails;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
 import com.google.gson.JsonObject;
@@ -16,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import static com.batch.api.common.Constants.InputConfigConstants.*;
+import static com.batch.utils.VariableCollections.RunType;
 
 
 /**
@@ -123,7 +125,9 @@ public class DBEntryVerification {
         Timestamp batch_creation_time = batchJDBCTemplate.getLatestBatchCreationTime(pilot_id, component);
         if (batch_creation_time != null) {
             Reporter.log("Latest Batch Creation Time: " + batch_creation_time, true);
+            VariableCollections.map.put("RunType", "SubseqRun");
         } else {
+            VariableCollections.map.put("RunType", "InitRun");
             Date now = new Date();
             Timestamp ts = new Timestamp(now.getTime());
             batch_creation_time = ts;

@@ -26,11 +26,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static com.batch.api.common.Constants.InputConfigConstants.*;
+import static com.batch.api.common.Constants.InputConfigConstants.LATEST_MODIFIED_TIME;
+import static com.batch.api.common.Constants.InputConfigConstants.S3_PREFIX;
 import static com.batch.creation.BatchCountValidator.amazons3Client;
 
 @Test()
-public class TC_BC_23 {
+public class TC_BC_26 {
 
     private Integer issueCount = 0;
 
@@ -59,38 +60,33 @@ public class TC_BC_23 {
         Integer maxLookUpDays = bc.getMaxLookUpDays();
 
         Reporter.log("Max Lookup Days configured : " + maxLookUpDays, true);
-
         Long dataSizeInbytes = bc.getDataSizeInBytes();
 
         String manifest_prefix = "batch-manifests/pilot_id=" + pilotId + "/batch_id";
 
 
+        // get latestbatch Creation time
         Reporter.log("Getting latest batch creation time", true);
-
+        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
 
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
 
-        int DelBatchDetails = batchJDBCTemplate.DelBatchDetails(pilotId, component);
-        if (DelBatchDetails > 0) {
-            Reporter.log("Records have been removed !", true);
-        } else {
-            Reporter.log("No records there to delete", true);
-        }
+
+        // get latestbatch Creation time
+        List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
+
+
+        Timestamp latest_modified_time = (Timestamp) (latestObjectDetails.size() > 0 ? latestObjectDetails.get(0).get(LATEST_MODIFIED_TIME) : new Timestamp(new Date().getTime()));
+
+        //Clearing up old data
+
         try {
-            System.out.println("Deleting Objects in aws..");
+            System.out.println("Deleting Objects ..");
             BatchCountValidator.delawsObjects(s3Bucket, BucketPrefix);
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
             System.exit(1);
         }
-
-        Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
-
-        // get latest batch details
-        List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
-
-        Timestamp latest_modified_time = (Timestamp) (latestObjectDetails.size() > 0 ? latestObjectDetails.get(0).get(LATEST_MODIFIED_TIME) : new Timestamp(new Date().getTime()));
-
 
         Thread.sleep(5000);
 
@@ -110,21 +106,20 @@ public class TC_BC_23 {
             AmazonS3URI SRC_URI = new AmazonS3URI(SRC);
             long DataAccumulatedSize = S3FileTransferHandler.S3toS3TransferFiles(DEST_URI, SRC_URI);
             Reporter.log("Object Transferred at " + Calendar.getInstance().getTime() + ",  Data Accumulated Size ...... " + DataAccumulatedSize, true);
-            c.add(Calendar.DATE, -1);
+            c.add(Calendar.DATE, -1); // Adding 5 days
         }
         //We can pass current automation execution date to prefix as Automation needs to test data from automation only
         Integer ExpectedNoOfBatches = BatchCountValidator.getExpectedNoOfBatches(s3Bucket, BucketPrefix, dataSizeInbytes, maxLookUpDays, latest_modified_time, directoryStructure);
 
         Reporter.log("Expected number of batches : " + ExpectedNoOfBatches, true);
 
-        BatchExecutionWatcher.bewatch(1);
 
+        BatchExecutionWatcher.bewatch(1);
         try {
             List<String> GeneratedBatches = BatchCountValidator.getBatchManifestFileList(pilotId, component, s3Bucket, manifest_prefix, LatestBatchCreationTime);          // now we need to verify the manifest files and check whether the object is present in it or not
             for (String batchManifest : GeneratedBatches) {
                 JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
                 JsonArray batchObjects = jsonObject.get("batchObjects").getAsJsonArray();
-                Reporter.log("Prefixes considered are -> " + LookUpDirectories);
                 for (JsonElement batchObj : batchObjects) {
                     boolean ObjAvbl = false;
                     for (String Dir : LookUpDirectories) {
@@ -139,7 +134,6 @@ public class TC_BC_23 {
                     }
                 }
             }
-
         } catch (Throwable e) {
             // print stack trace
             e.printStackTrace();

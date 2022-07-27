@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.*;
 import com.batch.utils.S3FileTransferHandler;
+import com.batch.utils.VariableCollections;
 import com.batch.utils.sql.batch.BatchJDBCTemplate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -100,21 +101,39 @@ public class BatchCountValidator {
         Calendar c = Calendar.getInstance();
         Integer expectedNumberOfBatches = 0;
         long tempAccumulatedSize = 0L;
-        BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
+
+
+
+
+
 
         ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket).withPrefix(prefix);
 
-        if (maxLookUpDays > -1) {
-            c.add(Calendar.DATE, -maxLookUpDays);
+        String RunType = (String) VariableCollections.map.get("RunType");
+
+        Reporter.log("Runtype : " + RunType, true);
+
+        if (RunType.equals("InitRun") && maxLookUpDays > -1) {
+            //For Initial run and where maxLookUpDays is greater than -1 then maxLookUpdays + current day will be considered for batch
+            c.add(Calendar.DATE, -(maxLookUpDays + 1));
+            String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
+            ListObjreq = ListObjreq.withStartAfter(dt);
+        } else if (RunType.equals("SubseqRun")) {
+            //For any subsequent run buffer of 2 days + current day will be considered for the batch
+            c.add(Calendar.DATE, -3);
             String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
             ListObjreq = ListObjreq.withStartAfter(dt);
         }
+
 
         ArrayList<S3ObjectSummary> summ = new ArrayList<>();
         ListObjectsV2Result objs = null;
         do {
             objs = amazons3Client.listObjectsV2(ListObjreq);
             summ.addAll(objs.getObjectSummaries());
+
+
+
             ListObjreq.setContinuationToken(objs.getNextContinuationToken());
         } while (objs.isTruncated());
 
@@ -122,7 +141,7 @@ public class BatchCountValidator {
         for (S3ObjectSummary summary : summ) {
             // below condition to be modified bit more based on the maxlookupdays logic
 
-            if (maxLookUpDays == -1 || latest_modified_time.equals(null) || (latest_modified_time.compareTo(summary.getLastModified()) < 0)) {
+            if (maxLookUpDays == -1 || RunType.equals("InitRun") || (latest_modified_time.compareTo(summary.getLastModified()) < 0)) {
                 Reporter.log("Object accumulated : ", true);
                 Reporter.log(summary.getKey(), true);
                 tempAccumulatedSize += summary.getSize();
@@ -132,7 +151,6 @@ public class BatchCountValidator {
                 }
             }
         }
-
 
         if (expectedNumberOfBatches == 0) {
             Reporter.log("Configured Sized Data " + dataSizeInBytes + " hasn't been accumulated. Hence one TIME_BASED manifest batch may get generated !", true);
@@ -196,45 +214,27 @@ public class BatchCountValidator {
         return DataAccumulatedSize;
     }
 
-    //get Object list from batchManifestFile  and calculate size of those files
-/*
+    public static void delawsObjects(String bucketName, String bucketprefix) {
+        if (amazons3Client.doesBucketExist(bucketName)) {
+            ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+                    .withBucketName(bucketName)
+                    .withPrefix(bucketprefix);
 
-    public static Long getAccumulatedSize(Integer pilotId, String s3Bucket, String prefix) {
+            ObjectListing objectListing = amazons3Client.listObjects(listObjectsRequest);
 
-        long DataAccumulatedSize = 0L;
-
-        BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
-        List<BatchDetails> batch_details = batchJDBCTemplate.listBatches(pilotId);
-
-        Reporter.log("Size:  ---------> " + batch_details.size(),true);
-
-        for (BatchDetails str : batch_details) {
-            Reporter.log(str.getLatest_modified_key(),true);
-        }
-
-        ListObjectsV2Request ListObjreq = new ListObjectsV2Request().withBucketName(s3Bucket).withStartAfter(prefix);
-
-        ArrayList<S3ObjectSummary> summ = new ArrayList<>();
-
-        ListObjectsV2Result objs = null;
-        do {
-            objs = amazons3Client.listObjectsV2(ListObjreq);
-            Reporter.log(objs.getObjectSummaries() + "\n",true);
-            summ.addAll(objs.getObjectSummaries());
-            ListObjreq.setContinuationToken(objs.getNextContinuationToken());
-        } while (objs.isTruncated());
-
-
-        for (S3ObjectSummary summary : summ) {
-            if (getLatest_modified_time().compareTo(summary.getLastModified()) >= 0) {
-                Reporter.log(summary.getLastModified(),true);
-                DataAccumulatedSize += summary.getSize();
+            while (true) {
+                for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+                    amazons3Client.deleteObject(bucketName, objectSummary.getKey());
+                    Reporter.log("Removing Old objects : " + objectSummary.getKey(), true);
+                }
+                if (objectListing.isTruncated()) {
+                    objectListing = amazons3Client.listNextBatchOfObjects(objectListing);
+                } else {
+                    break;
+                }
             }
         }
-        Reporter.log("DataAccumulated Size :  " + DataAccumulatedSize,true);
-        return DataAccumulatedSize;
     }
-*/
 
 }
 

@@ -182,6 +182,7 @@ public class S3FileTransferHandler {
                 ListObjreq.setContinuationToken(objs.getNextContinuationToken());
             } while (objs.isTruncated());
 
+            Reporter.log("Data Accumulation In Progress..",true);
             for (S3ObjectSummary summary : summ) {
                 List<String> ObjName = Arrays.asList(summary.getKey().split("/"));
                 /*try {
