@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import static com.batch.api.common.Constants.InputConfigConstants.*;
 import static com.batch.creation.BatchCountValidator.amazons3Client;
+import static com.batch.creation.DBEntryVerification.batchJDBCTemplate;
 
 @Test()
 public class TC_BC_23 {
@@ -68,9 +69,7 @@ public class TC_BC_23 {
         Reporter.log("Getting latest batch creation time", true);
 
 
-        BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
-
-        int DelBatchDetails = batchJDBCTemplate.DelBatchDetails(pilotId, component);
+        int DelBatchDetails = DBEntryVerification.DelBatchDetails(pilotId, component);
         if (DelBatchDetails > 0) {
             Reporter.log("Records have been removed !", true);
         } else {
@@ -101,9 +100,7 @@ public class TC_BC_23 {
 
         for (int i = 1; i <= 9; i++) {
             String dt = directoryStructure.equals("PartitionByDate") ? "date=" + new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) : new SimpleDateFormat("yyyy/MM/dd").format(c.getTime());
-            if (i <= maxLookUpDays) {
-                LookUpDirectories.add(dt);
-            }
+            LookUpDirectories.add(dt);
             String DEST = S3_PREFIX + s3Bucket + "/TestAutomation/" + pilotId + "/" + dataSetType + "/" + dt + "/" + getClass().getSimpleName();
             AmazonS3URI DEST_URI = new AmazonS3URI(DEST);
             String SRC = S3_PREFIX + s3Bucket + "/TestData/" + pilotId + "/" + dataSetType + "/" + getClass().getSimpleName() + "/dt" + i;
@@ -124,10 +121,12 @@ public class TC_BC_23 {
             for (String batchManifest : GeneratedBatches) {
                 JsonObject jsonObject = ManifestFileParser.getManifestDetails(s3Bucket, batchManifest);
                 JsonArray batchObjects = jsonObject.get("batchObjects").getAsJsonArray();
-                Reporter.log("Prefixes considered are -> " + LookUpDirectories);
+                Reporter.log("Prefixes considered are -> " + LookUpDirectories, true);
                 for (JsonElement batchObj : batchObjects) {
                     boolean ObjAvbl = false;
                     for (String Dir : LookUpDirectories) {
+
+                        Reporter.log(batchObj.toString() + " " + Dir, true);
                         if (batchObj.toString().contains(Dir)) {
                             ObjAvbl = true;
                             continue;

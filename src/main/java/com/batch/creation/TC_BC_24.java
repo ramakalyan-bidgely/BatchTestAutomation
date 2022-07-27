@@ -66,6 +66,7 @@ public class TC_BC_24 {
 
         // get latestbatch Creation time
         Reporter.log("Getting latest batch creation time", true);
+
         Timestamp LatestBatchCreationTime = DBEntryVerification.getLatestBatchCreationTime(pilotId, component);
 
         BatchJDBCTemplate batchJDBCTemplate = new BatchJDBCTemplate();
@@ -87,7 +88,7 @@ public class TC_BC_24 {
             System.exit(1);
         }
 
-        // get latestbatch Creation time
+
         List<Map<String, Object>> latestObjectDetails = batchJDBCTemplate.getLatestObjectDetails(pilotId, component);
 
 

@@ -121,6 +121,11 @@ public class DBEntryVerification {
         return latest_modified_time;
     }
 
+    public static int DelBatchDetails(Integer pilot_id, String component) {
+        int rowsAffected = batchJDBCTemplate.DelBatchDetails(pilot_id, component);
+        return rowsAffected;
+    }
+
     public static Timestamp getLatestBatchCreationTime(Integer pilot_id, String component) {
         Timestamp batch_creation_time = batchJDBCTemplate.getLatestBatchCreationTime(pilot_id, component);
         if (batch_creation_time != null) {
